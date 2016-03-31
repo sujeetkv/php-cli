@@ -1,0 +1,48 @@
+#!/usr/bin/env php
+<?php
+require_once '../Cli.php';
+
+$settings = array(
+	'help_note' => 'This script is meant for show status demo.'
+);
+
+$cli = new Cli($settings);
+
+$cli->printText('Welcome !');
+
+$cli->nl();
+
+$cli->printText('Progress Status Demo:');
+$cli->showStatus('Loading...');
+sleep(5);//do some stuff---
+$cli->showStatus('Loaded!', true);
+
+$cli->nl();
+
+$cli->printText('Progress Count Demo:');
+for($i = 1; $i <= 10; $i++){
+	sleep(1);//do some stuff---
+	$cli->showStatus('Step '.$i, ($i==10?true:false));
+}
+
+$cli->nl();
+
+$cli->printText('Progress Percent Demo:');
+$total = 20;
+for($i=0; $i<=$total; $i++){
+	sleep(1);//do some stuff---
+	$cli->showProgress($total,$i); // $i should be 0 upto total
+	//----------------
+}
+
+$cli->nl();
+
+$cli->printText('Progress Bar Demo:');
+$total = 20;
+for($i=0; $i<=$total; $i++){
+	sleep(1);//do some stuff---
+	$cli->showProgressBar($total,$i); // $i should be 0 upto total
+	//----------------
+}
+
+$cli->nl();

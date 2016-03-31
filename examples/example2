@@ -1,0 +1,27 @@
+#!/usr/bin/env php
+<?php
+require_once '../Cli.php';
+
+$settings = array(
+	'help_note' => 'This script is meant for auth demonstration.'
+);
+
+$cli = new Cli($settings);
+
+do{
+	$username = $cli->promptInput('Enter Username');
+	$password = $cli->promptInput('Enter Password', true);
+	$cli->nl();
+	if($username == 'admin' and $password == '123456'){
+		$logged_in = true;
+		$cli->printText('You are logged in.','green');
+	}else{
+		$logged_in = false;
+		$cli->printText('Invalid Username or Password. ','red');
+		$cli->nl();
+	}
+}while(! $logged_in);
+
+$cli->nl();
+
+$cli->printText('Welcome !');

@@ -1,0 +1,37 @@
+#!/usr/bin/env php
+<?php
+require_once '../Cli.php';
+
+$settings = array(
+	'options' => array(
+		/*    short   long       description              required
+		      option  option                                      */
+		array('a',    'opta',    'demo description a',    true),
+		array('b',    'optb',    'demo description b'),
+		array('c',    'optc',    'demo description c')
+	),
+	'help_note' => 'This script is meant for demonstration.'
+);
+
+$cli = new Cli($settings);
+
+$cli->printText('Hello Cli.');
+
+$cli->bindOption('a', function($cli, $val){
+	$cli->printText('Hello '.$val);
+});
+
+$cli->bindOption('b', function($cli, $val){
+	$cli->printText('Hello '.$val);
+}, array('B'));
+
+
+function hello_c($cli){
+	$cli->printText('Hello C');
+}
+
+$cli->bindOption('c', 'hello_c');
+
+if($cli->isOption('c')){
+	hello_c($cli);
+}

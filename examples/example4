@@ -1,0 +1,40 @@
+#!/usr/bin/env php
+<?php
+require_once '../Cli.php';
+
+$settings = array(
+	'options' => array(
+		array('a',    'opta',    'demo description a'),
+		array('b',    'optb',    'b to stop script')
+	),
+	'help_note' => 'This script is meant for demonstration.'
+);
+
+$cli = new Cli($settings);
+
+$cli->printText('Welcome Green', 'green');
+$cli->printText('Welcome Red', 'red');
+$cli->hr();
+
+if($cli->isOption('b')){
+	$cli->printText('Bye');
+	$cli->stop();
+}
+
+var_dump($cli->isValidOption('a'));
+
+var_dump($cli->hasArg('a'));
+
+var_dump($cli->isOption('a'));
+
+print_r($cli->getArgs());
+
+print_r($cli->getOptions('a'));
+
+print_r($cli->getOptions());
+
+$cli->printText($cli->coloredText($cli->getOptionValue('a'), 'red'));
+
+$cli->nl();
+
+$cli->printText($cli->getMemoryUsage());
