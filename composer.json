@@ -1,0 +1,19 @@
+{
+    "name": "sujeet-kumar/php-cli",
+    "description": "Cli utility class for PHP Command Line Interface",
+    "type": "library",
+    "keywords": ["cli", "command", "line", "interface"],
+    "homepage": "https://github.com/sujeet-kumar/php-cli/",
+    "authors": [
+        {
+            "name": "Sujeet Kumar",
+            "email": "sujeetkv90@gmail.com"
+        }
+    ],
+    "autoload": {
+        "psr-4": {
+            "SujeetKumar\\PhpCli\\": "src/"
+        }
+    },
+    "minimum-stability": "dev"
+}

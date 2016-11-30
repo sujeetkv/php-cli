@@ -1,6 +1,8 @@
 #!/usr/bin/env php
 <?php
-require_once '../Cli.php';
+require_once '../src/Cli.php';
+
+use SujeetKumar\PhpCli\Cli;
 
 $settings = array(
 	'help_note' => 'This script is meant for auth demonstration.'
