@@ -8,8 +8,9 @@ namespace SujeetKumar\PhpCli;
  */
 class Cli
 {
-    const LF = PHP_EOL;
+    const NL = PHP_EOL;
     const CR = "\r";
+    const LF = "\n";
     const TAB = "\t";
     
     protected $stdout = NULL;
@@ -19,7 +20,7 @@ class Cli
     protected $args = array();
     protected $options = array();
     protected $help_note = '';
-    protected $cli_width = 60;
+    protected $cli_width = 80;
     
     protected $foreground_colors = array(
         'black'         => '0;30',
@@ -102,9 +103,9 @@ class Cli
      */
     public function write($text, $newlines = 1) {
         if (is_array($text)) {
-            $text = implode(self::LF, $text);
+            $text = implode(self::NL, $text);
         }
-        return fwrite($this->stdout, $text . str_repeat(self::LF, $newlines));
+        return fwrite($this->stdout, $text . str_repeat(self::NL, $newlines));
     }
     
     /**
@@ -318,13 +319,13 @@ class Cli
         } else {
             $text[] = $this->coloredText('No arguments given !', 'red');
         }
-        $text[] = self::LF;
+        $text[] = self::NL;
         if (!empty($this->options)) {
             $text[] = $this->coloredText('Registered options:', 'purple');
             $i = 1;
             foreach ($this->options as $opt => $option) {
-                $text[] = self::LF;
-                $text[] = $this->coloredText($i . ')', 'red') . self::TAB . $this->coloredText('Option: ', 'light_blue') . self::TAB . $opt;
+                $text[] = self::NL;
+                $text[] = $i . ')' . self::TAB . $this->coloredText('Option: ', 'light_blue') . self::TAB . $opt;
                 $text[] = self::TAB . $this->coloredText('Long Option: ', 'light_blue') . self::TAB . $option['long_opt'];
                 $text[] = self::TAB . $this->coloredText('Description: ', 'light_blue') . self::TAB . $option['description'];
                 $text[] = self::TAB . $this->coloredText('Required: ', 'light_blue') . self::TAB . (($option['required']) ? $this->coloredText('Yes', 'green') : $this->coloredText('No', 'red'));
@@ -335,9 +336,9 @@ class Cli
             $text[] = $this->coloredText('No options registered !', 'red');
         }
         if (!empty($this->help_note)) {
-            $text[] = self::LF;
+            $text[] = self::NL;
             $text[] = $this->coloredText(str_repeat('-', $hw), 'yellow');
-            $text[] = wordwrap($this->help_note, $hw, self::LF, true);
+            $text[] = wordwrap($this->help_note, $hw, self::NL, true);
             $text[] = $this->coloredText(str_repeat('-', $hw), 'yellow');
         }
         $text[] = $this->coloredText(str_repeat('=', $hw), 'green');
@@ -355,7 +356,7 @@ class Cli
         if ($len) {
             $_msg = ($len < $_len) ? str_pad($msg, $_len) : $msg;
             $_len = $len;
-            $this->write($_msg . (($passive) ? self::LF : self::CR), 0);
+            $this->write(' ' . $_msg . (($passive) ? self::NL : self::CR), 0);
         }
     }
     
@@ -368,7 +369,7 @@ class Cli
     public function showProgress($totalCount, $currCount, $msg = 'Processing...') {
         if ($totalCount > 0) {
             $p = floor((($currCount / $totalCount) * 100));
-            $this->write($msg . ' ' . $p . '%' . (($p == 100) ? " Complete !" . self::LF : self::CR), 0);
+            $this->write(' ' . $msg . ' ' . $p . '%' . (($p == 100) ? " Complete !" . self::NL : self::CR), 0);
         }
     }
     
@@ -380,8 +381,8 @@ class Cli
     public function showProgressBar($totalCount, $currCount) {
         if ($totalCount > 0) {
             $p = floor((($currCount / $totalCount) * 100));
-            $_b = '[' . str_pad(str_repeat('|', intval($p / 2)), 50) . ']';
-            $this->write(' ' . $p . '% ' . self::TAB . $_b . (($p == 100) ? self::LF : self::CR), 0);
+            $b = '[' . str_pad(str_repeat('|', intval($p / 2)), 50, '-') . ']';
+            $this->write(' ' . $p . '% ' . self::TAB . $b . (($p == 100) ? self::NL : self::CR), 0);
         }
     }
     
