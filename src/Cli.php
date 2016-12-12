@@ -15,6 +15,7 @@ class Cli
     
     protected $stdout = NULL;
     protected $stdin = NULL;
+    protected static $stty;
     protected $readline_supported = false;
     protected $color_supported = false;
     protected $args = array();
@@ -128,14 +129,44 @@ class Cli
         if (!empty($prompt_message)) {
             $this->write("$prompt_message: ", 0);
             
-            if ($secure and $this->color_supported) {
-                $this->write("\033[0;30m\033[40m", 0);
-            }
-            
-            $input = trim($this->read());
-            
-            if ($secure and $this->color_supported) {
-                $this->write("\033[0m", 0);
+            if ($secure) {
+                if ($this->_isWindows()) {
+                    
+                    $exe = __DIR__ . '/bin/hiddeninput.exe';
+                    // handle code running from a phar
+                    if ('phar:' === substr(__FILE__, 0, 5)) {
+                        $tmp_exe = sys_get_temp_dir() . '/hiddeninput.exe';
+                        copy($exe, $tmp_exe);
+                        $exe = $tmp_exe;
+                    }
+                    
+                    $input = rtrim(shell_exec($exe));
+                    $this->nl();
+                    
+                    if (isset($tmp_exe)) {
+                        unlink($tmp_exe);
+                    }
+                    
+                } elseif ($this->_hasStty()) {
+                    
+                    $stty_mode = shell_exec('stty -g');
+                    
+                    shell_exec('stty -echo');
+                    $input = trim($this->read());
+                    shell_exec(sprintf('stty %s', $stty_mode));
+                    $this->nl();
+                    
+                } elseif ($this->color_supported) {
+                    
+                    $this->write("\033[0;30m\033[40m", 0);
+                    $input = trim($this->read());
+                    $this->write("\033[0m", 0);
+                    
+                } else {
+                    throw new CliException('Secure input not supported.');
+                }
+            } else {
+                $input = trim($this->read());
             }
         }
         return $input;
@@ -161,8 +192,9 @@ class Cli
             }
         }
         $str .= strval($text);
-        if ($colored)
+        if ($colored) {
             $str .= "\033[0m";
+        }
         return $str;
     }
     
@@ -476,14 +508,6 @@ class Cli
         }
     }
     
-    protected function _isCli() {
-        return (php_sapi_name() == 'cli' or defined('STDIN'));
-    }
-    
-    protected function _isWindows() {
-        return (strtoupper(substr(php_uname('s'), 0, 3)) == 'WIN');
-    }
-    
     protected function _processArgs() {
         $_argc = isset($argc) ? $argc : $_SERVER['argc'];
         $_argv = isset($argv) ? $argv : $_SERVER['argv'];
@@ -543,6 +567,24 @@ class Cli
     
     protected function _setHelpNote($help_note) {
         empty($help_note) or $this->help_note = strval($help_note);
+    }
+    
+    protected function _isCli() {
+        return (php_sapi_name() == 'cli' or defined('STDIN'));
+    }
+    
+    protected function _isWindows() {
+        return (strtoupper(substr(php_uname('s'), 0, 3)) == 'WIN');
+    }
+    
+    protected function _hasStty() {
+        if (null !== self::$stty) {
+            return self::$stty;
+        }
+        
+        exec('stty 2>&1', $output, $exitcode);
+        
+        return self::$stty = $exitcode === 0;
     }
     
     public function __destruct() {
