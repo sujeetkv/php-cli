@@ -3,8 +3,8 @@ namespace SujeetKumar\PhpCli;
 
 /**
  * Cli utility class for PHP Command Line Interface
- * @author	Sujeet <sujeetkv90@gmail.com>
- * @link	https://github.com/sujeet-kumar/php-cli
+ * @author  Sujeet <sujeetkv90@gmail.com>
+ * @link    https://github.com/sujeet-kumar/php-cli
  */
 class Cli
 {
@@ -394,26 +394,26 @@ class Cli
     
     /**
      * Show progress percentage, to be used with loop
-     * @param	int $totalCount
-     * @param	int $currCount
+     * @param	int $totalStep
+     * @param	int $currentStep
      * @param	string $msg
      */
-    public function showProgress($totalCount, $currCount, $msg = 'Processing...') {
-        if ($totalCount > 0) {
-            $p = floor((($currCount / $totalCount) * 100));
+    public function showProgress($totalStep, $currentStep, $msg = 'Processing...') {
+        if ($totalStep > 0) {
+            $p = floor((($currentStep / $totalStep) * 100));
             $this->write(' ' . $msg . ' ' . $p . '%' . (($p == 100) ? " Complete !" . self::NL : self::CR), 0);
         }
     }
     
     /**
      * Show progress bar, to be used with loop
-     * @param	int $totalCount
-     * @param	int $currCount
+     * @param	int $totalStep
+     * @param	int $currentStep
      */
-    public function showProgressBar($totalCount, $currCount) {
-        if ($totalCount > 0) {
-            $p = floor((($currCount / $totalCount) * 100));
-            $b = '[' . str_pad(str_repeat('|', intval($p / 2)), 50, '-') . ']';
+    public function showProgressBar($totalStep, $currentStep) {
+        if ($totalStep > 0) {
+            $p = floor((($currentStep / $totalStep) * 100));
+            $b = '[' . str_pad(str_repeat('|', intval($p / 2)), 50, '_') . ']';
             $this->write(' ' . $p . '% ' . self::TAB . $b . (($p == 100) ? self::NL : self::CR), 0);
         }
     }

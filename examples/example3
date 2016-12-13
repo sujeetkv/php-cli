@@ -31,9 +31,10 @@ $cli->nl();
 
 $cli->printText('Progress Percent Demo:');
 $total = 20;
-for($i=0; $i<=$total; $i++){
+$cli->showProgress($total, 0); // start
+for($i=1; $i<=$total; $i++){
 	sleep(1);//do some stuff---
-	$cli->showProgress($total,$i); // $i should be 0 upto total
+	$cli->showProgress($total, $i);
 	//----------------
 }
 
@@ -41,9 +42,10 @@ $cli->nl();
 
 $cli->printText('Progress Bar Demo:');
 $total = 20;
-for($i=0; $i<=$total; $i++){
+$cli->showProgressBar($total, 0); // start
+for($i=1; $i<=$total; $i++){
 	sleep(1);//do some stuff---
-	$cli->showProgressBar($total,$i); // $i should be 0 upto total
+	$cli->showProgressBar($total, $i);
 	//----------------
 }
 
