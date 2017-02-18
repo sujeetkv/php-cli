@@ -1,5 +1,5 @@
 # php-cli
-Cli utility class for PHP Command Line Interface
+PHP library to build command line tools
 
 -by Sujeet <sujeetkv90@gmail.com>
 
