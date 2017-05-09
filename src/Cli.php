@@ -1,11 +1,15 @@
 <?php
-namespace SujeetKumar\PhpCli;
-
 /**
  * PHP library to build command line tools
  *
  * @author  Sujeet <sujeetkv90@gmail.com>
  * @link    https://github.com/sujeet-kumar/php-cli
+ */
+
+namespace SujeetKumar\PhpCli;
+
+/**
+ * Cli class
  */
 class Cli
 {
@@ -86,16 +90,17 @@ class Cli
     
     /**
      * Read line from console
+     * @param	string $prompt
      */
-    public function read() {
+    public function read($prompt = '') {
         if ($this->readline_supported) {
-            $line = readline('');
-            if (!empty($line)) {
-                readline_add_history($line);
-            }
-            return $line;
+            $line = readline($prompt);
+        } else {
+            $this->write($prompt, 0);
+            $line = fgets($this->stdin);
+            $line = (false === $line || '' === $line) ? false : rtrim($line);
         }
-        return fgets($this->stdin);
+        return $line;
     }
     
     /**
@@ -596,10 +601,5 @@ class Cli
             fclose($this->stdin);
         }
     }
-    
-}
-
-/* Cli Exception */
-class CliException extends \Exception {
     
 }

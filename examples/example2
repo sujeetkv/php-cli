@@ -1,6 +1,7 @@
 #!/usr/bin/env php
 <?php
 require_once '../src/Cli.php';
+require_once '../src/CliException.php';
 
 use SujeetKumar\PhpCli\Cli;
 
