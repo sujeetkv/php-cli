@@ -1,0 +1,14 @@
+#!/usr/bin/env php
+<?php
+require_once '../src/Cli.php';
+require_once '../src/CliException.php';
+
+use SujeetKumar\PhpCli\Cli;
+
+$cli = new Cli();
+
+$cli->interactiveShell(function ($command) {
+    
+}, function () {
+    return ['cmd', 'asgg', 'trde'];
+});

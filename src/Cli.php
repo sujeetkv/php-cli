@@ -27,6 +27,7 @@ class Cli
     protected $options = array();
     protected $help_note = '';
     protected $cli_width = 80;
+    protected $shell_history = './.history_cli';
     
     protected $foreground_colors = array(
         'black'         => '0;30',
@@ -176,6 +177,47 @@ class Cli
             }
         }
         return $input;
+    }
+    
+    public function interactiveShell($shell_handler, $auto_completer = NULL) {
+        $commands = array();
+        
+        if ($auto_completer) {
+            if (is_callable($auto_completer, false, $callable_name)) {
+                $commands = call_user_func($auto_completer);
+            } else {
+                throw new CliException('Invalid auto_completer callable provided: ' . $callable_name);
+            }
+        }
+        
+        if ($this->readline_supported) {
+            readline_read_history($this->shell_history);
+            if ($auto_completer) {
+                readline_completion_function($auto_completer);
+            }
+        }
+        
+        do {
+            
+            $command = $this->read('> ');
+            
+            if ($command === false or $command == 'exit') {
+                $this->write('');
+                break;
+            }
+            
+            if (is_callable($shell_handler, false, $callable_name)) {
+                $res = call_user_func($shell_handler, $command);
+            } else {
+                throw new CliException('Invalid shell_handler callable provided: ' . $callable_name);
+            }
+            
+            if ($this->readline_supported) {
+                readline_add_history($command);
+                readline_write_history($this->shell_history);
+            }
+            
+        } while ($res !== false);
     }
     
     /**
