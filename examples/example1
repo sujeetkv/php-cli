@@ -18,19 +18,19 @@ $settings = array(
 
 $cli = new Cli($settings);
 
-$cli->printText('Hello Cli.');
+$cli->cWrite('Hello Cli.');
 
 $cli->bindOption('a', function($cli, $val){
-	$cli->printText('Hello '.$val);
+	$cli->cWrite('Hello '.$val);
 });
 
 $cli->bindOption('b', function($cli, $val){
-	$cli->printText('Hello '.$val);
+	$cli->cWrite('Hello '.$val);
 }, array('B'));
 
 
 function hello_c($cli){
-	$cli->printText('Hello C');
+	$cli->cWrite('Hello C');
 }
 
 $cli->bindOption('c', 'hello_c');

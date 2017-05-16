@@ -121,9 +121,10 @@ class Cli
      * @param	string $text
      * @param	string $foreground_color
      * @param	string $background_color
+     * @param	int $newlines
      */
-    public function printText($text = '', $foreground_color = NULL, $background_color = NULL) {
-        return $this->write($this->coloredText($text, $foreground_color, $background_color));
+    public function cWrite($text = '', $foreground_color = NULL, $background_color = NULL, $newlines = 1) {
+        return $this->write($this->colorizeText($text, $foreground_color, $background_color), $newlines);
     }
     
     /**
@@ -179,42 +180,98 @@ class Cli
         return $input;
     }
     
-    public function interactiveShell($shell_handler, $auto_completer = NULL) {
-        $commands = array();
-        
-        if ($auto_completer) {
-            if (is_callable($auto_completer, false, $callable_name)) {
-                $commands = call_user_func($auto_completer);
-            } else {
-                throw new CliException('Invalid auto_completer callable provided: ' . $callable_name);
+    public function promptShell($commands, $shell_handler, $prompt = '>') {
+        if (empty($commands) or !is_array($commands)) {
+            throw new CliException('Invalid variable commands provided.');
+        } else {
+            $list = array_keys($commands);
+            $parsed_commands = array();
+            foreach ($commands as $cmd => $cmd_info) {
+                $parsed_commands[$cmd] = array();
+                if (is_array($cmd_info)) {
+                    foreach ($cmd_info as $info) {
+                        if (!empty($info[0])) {
+                            $opt = substr(strval($info[0]), 0, 1);
+                            $parsed_commands[$cmd][$opt] = array('opt' => NULL, 'long_opt' => NULL, 'description' => NULL);
+                            $parsed_commands[$cmd][$opt]['opt'] = '-' . $opt;
+                            empty($info[1]) or $parsed_commands[$cmd][$opt]['long_opt'] = '--' . strval($info[1]);
+                            empty($info[2]) or $parsed_commands[$cmd][$opt]['description'] = strval($info[2]);
+                        }
+                    }
+                }
             }
         }
         
         if ($this->readline_supported) {
             readline_read_history($this->shell_history);
-            if ($auto_completer) {
-                readline_completion_function($auto_completer);
-            }
+            readline_completion_function(function () use ($list) {
+                return $list;
+            });
         }
+        
+        $script_file = basename((isset($_SERVER['PHP_SELF']) ? $_SERVER['PHP_SELF'] : __FILE__));
+        
+        $header = <<<EOF
+
+Welcome to the {$script_file} shell.
+
+At the prompt, type list to get a list of 
+available commands.
+
+To exit the shell, type ^D or exit.
+
+EOF;
+        
+        $this->write($header);
         
         do {
             
-            $command = $this->read('> ');
+            $command = $this->read($prompt . ' ');
             
             if ($command === false or $command == 'exit') {
-                $this->write('');
+                $this->nl();
+                $this->write('bye', 2);
                 break;
             }
             
-            if (is_callable($shell_handler, false, $callable_name)) {
-                $res = call_user_func($shell_handler, $command);
-            } else {
-                throw new CliException('Invalid shell_handler callable provided: ' . $callable_name);
-            }
+            $res = true;
             
-            if ($this->readline_supported) {
-                readline_add_history($command);
-                readline_write_history($this->shell_history);
+            if (!empty($command)) {
+                $args = array_map('trim', explode(' ', $command));
+                $cmd = array_shift($args);
+                
+                if (is_callable($shell_handler, false, $callable_name)) {
+                    if (!in_array($cmd, $list)) {
+                        if ($cmd == 'list') {
+                            $this->write('List of valid commands:');
+                            $this->write($list, 2);
+                        } else {
+                            $this->write(array("No command '$cmd' found.", 'Available commands are:'));
+                            $this->write($list, 2);
+                        }
+                        continue;
+                    } else {
+                        $opts = array();
+                        foreach ($parsed_commands[$cmd] as $opt => $opt_info) {
+                            if (($opt_key = array_search($opt_info['opt'], $args)) !== false or ($opt_key = array_search($opt_info['long_opt'], $args)) !== false) {
+                                $opts[$opt] = NULL;
+                                $optval_key = $opt_key + 1;
+                                if (isset($args[$optval_key]) and !preg_match('/^(-|--)/', $args[$optval_key])) {
+                                    $opts[$opt] = $args[$optval_key];
+                                }
+                            }
+                        }
+                        
+                        $res = call_user_func($shell_handler, $this, $cmd, $opts);
+                    }
+                } else {
+                    throw new CliException('Invalid shell_handler callable provided: ' . $callable_name);
+                }
+
+                if ($this->readline_supported) {
+                    readline_add_history($command);
+                    readline_write_history($this->shell_history);
+                }
             }
             
         } while ($res !== false);
@@ -226,7 +283,7 @@ class Cli
      * @param	string $foreground_color
      * @param	string $background_color
      */
-    public function coloredText($text = '', $foreground_color = NULL, $background_color = NULL) {
+    public function colorizeText($text = '', $foreground_color = NULL, $background_color = NULL) {
         $str = '';
         $colored = false;
         if (!empty($text) and $this->color_supported) {
@@ -391,37 +448,37 @@ class Cli
     public function showHelp() {
         $hw = $this->cli_width;
         $text = array();
-        $text[] = $this->coloredText(str_repeat('=', $hw), 'green');
-        $text[] = $this->coloredText('Help for current command !', 'green');
-        $text[] = $this->coloredText(str_repeat('-', $hw), 'green');
+        $text[] = $this->colorizeText(str_repeat('=', $hw), 'green');
+        $text[] = $this->colorizeText('Help for current command !', 'green');
+        $text[] = $this->colorizeText(str_repeat('-', $hw), 'green');
         if (!empty($this->args)) {
-            $text[] = $this->coloredText('Given arguments: ', 'purple') . implode(', ', $this->args);
+            $text[] = $this->colorizeText('Given arguments: ', 'purple') . implode(', ', $this->args);
         } else {
-            $text[] = $this->coloredText('No arguments given !', 'red');
+            $text[] = $this->colorizeText('No arguments given !', 'red');
         }
         $text[] = self::NL;
         if (!empty($this->options)) {
-            $text[] = $this->coloredText('Registered options:', 'purple');
+            $text[] = $this->colorizeText('Registered options:', 'purple');
             $i = 1;
             foreach ($this->options as $opt => $option) {
                 $text[] = self::NL;
-                $text[] = $i . ')' . self::TAB . $this->coloredText('Option: ', 'light_blue') . self::TAB . $opt;
-                $text[] = self::TAB . $this->coloredText('Long Option: ', 'light_blue') . self::TAB . $option['long_opt'];
-                $text[] = self::TAB . $this->coloredText('Description: ', 'light_blue') . self::TAB . $option['description'];
-                $text[] = self::TAB . $this->coloredText('Required: ', 'light_blue') . self::TAB . (($option['required']) ? $this->coloredText('Yes', 'green') : $this->coloredText('No', 'red'));
-                $text[] = self::TAB . $this->coloredText('Given Value: ', 'light_blue') . self::TAB . $option['value'];
+                $text[] = $i . ')' . self::TAB . $this->colorizeText('Option: ', 'light_blue') . self::TAB . $opt;
+                $text[] = self::TAB . $this->colorizeText('Long Option: ', 'light_blue') . self::TAB . $option['long_opt'];
+                $text[] = self::TAB . $this->colorizeText('Description: ', 'light_blue') . self::TAB . $option['description'];
+                $text[] = self::TAB . $this->colorizeText('Required: ', 'light_blue') . self::TAB . (($option['required']) ? $this->colorizeText('Yes', 'green') : $this->colorizeText('No', 'red'));
+                $text[] = self::TAB . $this->colorizeText('Given Value: ', 'light_blue') . self::TAB . $option['value'];
                 $i++;
             }
         } else {
-            $text[] = $this->coloredText('No options registered !', 'red');
+            $text[] = $this->colorizeText('No options registered !', 'red');
         }
         if (!empty($this->help_note)) {
             $text[] = self::NL;
-            $text[] = $this->coloredText(str_repeat('-', $hw), 'yellow');
+            $text[] = $this->colorizeText(str_repeat('-', $hw), 'yellow');
             $text[] = wordwrap($this->help_note, $hw, self::NL, true);
-            $text[] = $this->coloredText(str_repeat('-', $hw), 'yellow');
+            $text[] = $this->colorizeText(str_repeat('-', $hw), 'yellow');
         }
-        $text[] = $this->coloredText(str_repeat('=', $hw), 'green');
+        $text[] = $this->colorizeText(str_repeat('=', $hw), 'green');
         $this->write($text);
     }
     
@@ -582,7 +639,7 @@ class Cli
                     if (isset($this->args[$optval_key]) and ! preg_match('/^(-|--)/', $this->args[$optval_key])) {
                         $this->options[$opt]['value'] = $this->args[$optval_key];
                     } elseif ($option['required'] === true) {
-                        $this->printText('Error! Given option ' . $this->args[$opt_key] . ' requires a value.', 'red');
+                        $this->cWrite('Error! Given option ' . $this->args[$opt_key] . ' requires a value.', 'red');
                         $this->nl();
                         $this->showHelp();
                         $this->stop();

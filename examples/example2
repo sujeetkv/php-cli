@@ -17,14 +17,14 @@ do{
 	$cli->nl();
 	if($username == 'admin' and $password == '123456'){
 		$logged_in = true;
-		$cli->printText('You are logged in.','green');
+		$cli->cWrite('You are logged in.','green');
 	}else{
 		$logged_in = false;
-		$cli->printText('Invalid Username or Password. ','red');
+		$cli->cWrite('Invalid Username or Password. ','red');
 		$cli->nl();
 	}
 }while(! $logged_in);
 
 $cli->nl();
 
-$cli->printText('Welcome !');
+$cli->cWrite('Welcome !');

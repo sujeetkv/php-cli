@@ -7,8 +7,15 @@ use SujeetKumar\PhpCli\Cli;
 
 $cli = new Cli();
 
-$cli->interactiveShell(function ($command) {
-    
-}, function () {
-    return ['cmd', 'asgg', 'trde'];
+$commands = array(
+    'hello' => array(
+        array('a', 'opta', 'opta desc'),
+        array('b', 'optb', 'optb desc')
+    ),
+    'world' => array()
+);
+
+$cli->promptShell($commands, function ($cli, $command, $options) {
+    $cli->cWrite($command);
+    print_r($options);
 });

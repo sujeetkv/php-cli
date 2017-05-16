@@ -11,18 +11,18 @@ $settings = array(
 
 $cli = new Cli($settings);
 
-$cli->printText('Welcome !');
+$cli->cWrite('Welcome !');
 
 $cli->nl();
 
-$cli->printText('Progress Status Demo:');
+$cli->cWrite('Progress Status Demo:');
 $cli->showStatus('Loading...');
 sleep(5);//do some stuff---
 $cli->showStatus('Loaded!', true);
 
 $cli->nl();
 
-$cli->printText('Progress Count Demo:');
+$cli->cWrite('Progress Count Demo:');
 for($i = 1; $i <= 10; $i++){
 	sleep(1);//do some stuff---
 	$cli->showStatus('Step '.$i, ($i==10?true:false));
@@ -30,7 +30,7 @@ for($i = 1; $i <= 10; $i++){
 
 $cli->nl();
 
-$cli->printText('Progress Percent Demo:');
+$cli->cWrite('Progress Percent Demo:');
 $total = 20;
 $cli->showProgress($total, 0); // start
 for($i=1; $i<=$total; $i++){
@@ -41,7 +41,7 @@ for($i=1; $i<=$total; $i++){
 
 $cli->nl();
 
-$cli->printText('Progress Bar Demo:');
+$cli->cWrite('Progress Bar Demo:');
 $total = 20;
 $cli->showProgressBar($total, 0); // start
 for($i=1; $i<=$total; $i++){

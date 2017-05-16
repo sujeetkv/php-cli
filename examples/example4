@@ -15,12 +15,12 @@ $settings = array(
 
 $cli = new Cli($settings);
 
-$cli->printText('Welcome Green', 'green');
-$cli->printText('Welcome Red', 'red');
+$cli->cWrite('Welcome Green', 'green');
+$cli->cWrite('Welcome Red', 'red');
 $cli->hr();
 
 if($cli->isOption('b')){
-	$cli->printText('Bye');
+	$cli->cWrite('Bye');
 	$cli->stop();
 }
 
@@ -36,8 +36,8 @@ print_r($cli->getOptions('a'));
 
 print_r($cli->getOptions());
 
-$cli->printText($cli->coloredText($cli->getOptionValue('a'), 'red'));
+$cli->write($cli->colorizeText($cli->getOptionValue('a'), 'red'));
 
 $cli->nl();
 
-$cli->printText($cli->getMemoryUsage());
+$cli->cWrite($cli->getMemoryUsage());
