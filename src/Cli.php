@@ -287,8 +287,10 @@ EOF;
                     if (in_array('-h', $args) or in_array('--help', $args)) {
                         $help = array();
                         $help[] = "Usage: $cmd [OPTION] [OPTION VALUE] ...";
-                        $help[] = 'Available options are:';
-                        $help = array_merge($help, $opt_help);
+                        if (!empty($opt_help)) {
+                            $help[] = 'Available options are:';
+                            $help = array_merge($help, $opt_help);
+                        }
                         $this->write($help, 2);
                         continue;
                     }
