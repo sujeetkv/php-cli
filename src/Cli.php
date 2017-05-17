@@ -193,6 +193,8 @@ class Cli
             throw new CliException('Invalid variable commands provided.');
             
         } else {
+            $commands['list'] = array();
+            
             $list = array_keys($commands);
             $parsed_commands = array();
             
@@ -260,14 +262,13 @@ EOF;
                 $args = array_map('trim', explode(' ', $command));
                 $cmd = array_shift($args);
                 
-                if (!in_array($cmd, $list)) {
-                    if ($cmd == 'list') {
-                        $this->write('List of valid commands:');
-                        $this->write($list, 2);
-                    } else {
-                        $this->write(array("No command '$cmd' found.", 'Available commands are:'));
-                        $this->write($list, 2);
-                    }
+                if ($cmd == 'list') {
+                    $this->write('List of valid commands:');
+                    $this->write($list, 2);
+                    continue;
+                } elseif (!in_array($cmd, $list)) {
+                    $this->write(array("No command '$cmd' found.", 'Available commands are:'));
+                    $this->write($list, 2);
                     continue;
                 } else {
                     $opts = array();
