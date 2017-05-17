@@ -189,12 +189,16 @@ class Cli
      */
     public function promptShell($shell_name, $commands, $shell_handler, $prompt = '>') {
         if (empty($commands) or !is_array($commands)) {
+            
             throw new CliException('Invalid variable commands provided.');
+            
         } else {
             $list = array_keys($commands);
             $parsed_commands = array();
+            
             foreach ($commands as $cmd => $cmd_info) {
                 $parsed_commands[$cmd] = array();
+                
                 if (is_array($cmd_info)) {
                     foreach ($cmd_info as $info) {
                         if (!empty($info[0])) {
@@ -207,6 +211,10 @@ class Cli
                     }
                 }
             }
+        }
+        
+        if (!is_callable($shell_handler, false, $callable_name)) {
+            throw new CliException('Invalid callable shell_handler provided: ' . $callable_name);
         }
         
         $this->shell_history = './.history_' . $shell_name;
@@ -244,51 +252,47 @@ EOF;
             $res = true;
             
             if (!empty($command)) {
-                $args = array_map('trim', explode(' ', $command));
-                $cmd = array_shift($args);
-                
-                if (is_callable($shell_handler, false, $callable_name)) {
-                    if (!in_array($cmd, $list)) {
-                        if ($cmd == 'list') {
-                            $this->write('List of valid commands:');
-                            $this->write($list, 2);
-                        } else {
-                            $this->write(array("No command '$cmd' found.", 'Available commands are:'));
-                            $this->write($list, 2);
-                        }
-                        continue;
-                    } else {
-                        $opts = array();
-                        $opt_help = array();
-                        foreach ($parsed_commands[$cmd] as $opt => $opt_info) {
-                            if (($opt_key = array_search($opt_info['opt'], $args)) !== false or ($opt_key = array_search($opt_info['long_opt'], $args)) !== false) {
-                                $opts[$opt] = NULL;
-                                $optval_key = $opt_key + 1;
-                                if (isset($args[$optval_key]) and !preg_match('/^(-|--)/', $args[$optval_key])) {
-                                    $opts[$opt] = $args[$optval_key];
-                                }
-                            }
-                            $opt_help[] = $opt_info['opt'] . ', ' . $opt_info['long_opt'] . self::TAB . $opt_info['description'];
-                        }
-                        
-                        if (in_array('-h', $args) or in_array('--help', $args)) {
-                            $help = array();
-                            $help[] = "Usage: $cmd [OPTION] [OPTION VALUE] ...";
-                            $help[] = 'Available options are:';
-                            $help = array_merge($help, $opt_help);
-                            $this->write($help, 2);
-                            continue;
-                        }
-                        
-                        $res = call_user_func($shell_handler, $this, $cmd, $opts);
-                    }
-                } else {
-                    throw new CliException('Invalid shell_handler callable provided: ' . $callable_name);
-                }
-
                 if ($this->readline_supported) {
                     readline_add_history($command);
                     readline_write_history($this->shell_history);
+                }
+                
+                $args = array_map('trim', explode(' ', $command));
+                $cmd = array_shift($args);
+                
+                if (!in_array($cmd, $list)) {
+                    if ($cmd == 'list') {
+                        $this->write('List of valid commands:');
+                        $this->write($list, 2);
+                    } else {
+                        $this->write(array("No command '$cmd' found.", 'Available commands are:'));
+                        $this->write($list, 2);
+                    }
+                    continue;
+                } else {
+                    $opts = array();
+                    $opt_help = array();
+                    foreach ($parsed_commands[$cmd] as $opt => $opt_info) {
+                        if (($opt_key = array_search($opt_info['opt'], $args)) !== false or ($opt_key = array_search($opt_info['long_opt'], $args)) !== false) {
+                            $opts[$opt] = NULL;
+                            $optval_key = $opt_key + 1;
+                            if (isset($args[$optval_key]) and !preg_match('/^(-|--)/', $args[$optval_key])) {
+                                $opts[$opt] = $args[$optval_key];
+                            }
+                        }
+                        $opt_help[] = $opt_info['opt'] . ', ' . $opt_info['long_opt'] . self::TAB . $opt_info['description'];
+                    }
+
+                    if (in_array('-h', $args) or in_array('--help', $args)) {
+                        $help = array();
+                        $help[] = "Usage: $cmd [OPTION] [OPTION VALUE] ...";
+                        $help[] = 'Available options are:';
+                        $help = array_merge($help, $opt_help);
+                        $this->write($help, 2);
+                        continue;
+                    }
+
+                    $res = call_user_func($shell_handler, $this, $cmd, $opts);
                 }
             }
             
