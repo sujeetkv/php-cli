@@ -5,7 +5,11 @@ require_once '../src/CliException.php';
 
 use SujeetKumar\PhpCli\Cli;
 
-$cli = new Cli();
+$settings = array(
+    'help_note' => 'This script is meant for demonstration.'
+);
+
+$cli = new Cli($settings);
 
 $commands = array(
     'hello' => array(
@@ -15,7 +19,7 @@ $commands = array(
     'world' => array()
 );
 
-$cli->promptShell($commands, function ($cli, $command, $options) {
+$cli->promptShell('DemoShell', $commands, function ($cli, $command, $options) {
     $cli->cWrite($command);
     print_r($options);
 });

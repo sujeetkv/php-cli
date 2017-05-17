@@ -180,7 +180,14 @@ class Cli
         return $input;
     }
     
-    public function promptShell($commands, $shell_handler, $prompt = '>') {
+    /**
+     * Create interactive shell on console
+     * @param	string $shell_name
+     * @param	array $commands
+     * @param	callable $shell_handler
+     * @param	string $prompt
+     */
+    public function promptShell($shell_name, $commands, $shell_handler, $prompt = '>') {
         if (empty($commands) or !is_array($commands)) {
             throw new CliException('Invalid variable commands provided.');
         } else {
@@ -202,6 +209,8 @@ class Cli
             }
         }
         
+        $this->shell_history = './.history_' . $shell_name;
+        
         if ($this->readline_supported) {
             readline_read_history($this->shell_history);
             readline_completion_function(function () use ($list) {
@@ -209,11 +218,9 @@ class Cli
             });
         }
         
-        $script_file = basename((isset($_SERVER['PHP_SELF']) ? $_SERVER['PHP_SELF'] : __FILE__));
-        
         $header = <<<EOF
 
-Welcome to the {$script_file} shell.
+Welcome to the {$shell_name} shell.
 
 At the prompt, type list to get a list of 
 available commands.
@@ -252,6 +259,7 @@ EOF;
                         continue;
                     } else {
                         $opts = array();
+                        $opt_help = array();
                         foreach ($parsed_commands[$cmd] as $opt => $opt_info) {
                             if (($opt_key = array_search($opt_info['opt'], $args)) !== false or ($opt_key = array_search($opt_info['long_opt'], $args)) !== false) {
                                 $opts[$opt] = NULL;
@@ -260,6 +268,16 @@ EOF;
                                     $opts[$opt] = $args[$optval_key];
                                 }
                             }
+                            $opt_help[] = $opt_info['opt'] . ', ' . $opt_info['long_opt'] . self::TAB . $opt_info['description'];
+                        }
+                        
+                        if (in_array('-h', $args) or in_array('--help', $args)) {
+                            $help = array();
+                            $help[] = "Usage: $cmd [OPTION] [OPTION VALUE] ...";
+                            $help[] = 'Available options are:';
+                            $help = array_merge($help, $opt_help);
+                            $this->write($help, 2);
+                            continue;
                         }
                         
                         $res = call_user_func($shell_handler, $this, $cmd, $opts);
