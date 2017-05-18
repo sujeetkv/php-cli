@@ -21,7 +21,7 @@ class Cli
     protected $stdout = NULL;
     protected $stdin = NULL;
     protected static $stty;
-    protected $readline_supported = false;
+    protected $readlineSupported = false;
     protected $color_supported = false;
     protected $args = array();
     protected $options = array();
@@ -82,7 +82,7 @@ class Cli
             throw new CliException('"' . get_class($this) . '" could not open STDIN.');
         }
         
-        $this->readline_supported = (extension_loaded('readline') && function_exists('readline')) ? true : false;
+        $this->readlineSupported = (extension_loaded('readline') && function_exists('readline')) ? true : false;
         
         $this->colorMode();
         $this->_processArgs();
@@ -94,7 +94,7 @@ class Cli
      * @param	string $prompt
      */
     public function read($prompt = '') {
-        if ($this->readline_supported) {
+        if ($this->readlineSupported) {
             $line = readline($prompt);
         } else {
             $this->write($prompt, 0);
@@ -221,7 +221,7 @@ class Cli
         
         $this->shell_history = './.history_' . $shell_name;
         
-        if ($this->readline_supported) {
+        if ($this->readlineSupported) {
             readline_read_history($this->shell_history);
             readline_completion_function(function () use ($list) {
                 return $list;
@@ -254,7 +254,7 @@ EOF;
             $res = true;
             
             if (!empty($command)) {
-                if ($this->readline_supported) {
+                if ($this->readlineSupported) {
                     readline_add_history($command);
                     readline_write_history($this->shell_history);
                 }
