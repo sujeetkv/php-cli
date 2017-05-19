@@ -13,118 +13,29 @@ namespace SujeetKumar\PhpCli;
  */
 class Cli
 {
-    const NL = PHP_EOL;
-    const CR = "\r";
-    const LF = "\n";
-    const TAB = "\t";
-    
-    protected $stdout = NULL;
-    protected $stdin = NULL;
-    protected static $stty;
-    protected $readlineSupported = false;
-    protected $color_supported = false;
     protected $args = array();
     protected $options = array();
-    protected $help_note = '';
-    protected $cli_width = 80;
-    protected $shell_history = './.history_cli';
+    protected $helpNote = '';
+    protected $shellHistory = './.history_cli';
     
-    protected $foreground_colors = array(
-        'black'         => '0;30',
-        'dark_gray'     => '1;30',
-        'blue'          => '0;34',
-        'light_blue'    => '1;34',
-        'green'         => '0;32',
-        'light_green'   => '1;32',
-        'cyan'          => '0;36',
-        'light_cyan'    => '1;36',
-        'red'           => '0;31',
-        'light_red'     => '1;31',
-        'purple'        => '0;35',
-        'light_purple'  => '1;35',
-        'brown'         => '0;33',
-        'yellow'        => '1;33',
-        'light_gray'    => '0;37',
-        'white'         => '1;37'
-    );
-    
-    protected $background_colors = array(
-        'black'         => '40',
-        'red'           => '41',
-        'green'         => '42',
-        'yellow'        => '43',
-        'blue'          => '44',
-        'magenta'       => '45',
-        'cyan'          => '46',
-        'light_gray'    => '47'
-    );
+    public $stdio;
     
     /**
      * Initialize cli
      * @param	array $settings
      */
     public function __construct($settings = array()) {
-        if (!$this->_isCli()) {
+        if (!StdIO::isCli()) {
             throw new CliException('"' . get_class($this) . '" class only supports Command Line Interface.');
         }
         
         ini_set('html_errors', 0);
         set_time_limit(0);
         
-        $this->stdout = @fopen('php://stdout', 'w');
-        $this->stdin = @fopen('php://stdin', 'r');
+        $this->stdio = new StdIO();
         
-        if (!$this->stdout) {
-            throw new CliException('"' . get_class($this) . '" could not open STDOUT.');
-        }
-        
-        if (!$this->stdin) {
-            throw new CliException('"' . get_class($this) . '" could not open STDIN.');
-        }
-        
-        $this->readlineSupported = (extension_loaded('readline') && function_exists('readline')) ? true : false;
-        
-        $this->colorMode();
-        $this->_processArgs();
-        $this->_initialize($settings);
-    }
-    
-    /**
-     * Read line from console
-     * @param	string $prompt
-     */
-    public function read($prompt = '') {
-        if ($this->readlineSupported) {
-            $line = readline($prompt);
-        } else {
-            $this->write($prompt, 0);
-            $line = fgets($this->stdin);
-            $line = (false === $line || '' === $line) ? false : rtrim($line);
-        }
-        return $line;
-    }
-    
-    /**
-     * Write text to console
-     * @param	mixed $text
-     * @param	int $newlines
-     */
-    public function write($text, $newlines = 1) {
-        if (is_array($text)) {
-            $text = implode(self::NL, $text);
-        }
-        return fwrite($this->stdout, $text . str_repeat(self::NL, $newlines));
-    }
-    
-    /**
-     * Write colored text to console
-     * @param	string $text
-     * @param	string $foreground_color
-     * @param	string $background_color
-     * @param	int $newlines
-     */
-    public function cWrite($text = '', $foreground_color = NULL, $background_color = NULL, $newlines = 1) {
-        return $this->write($this->colorizeText($text, $foreground_color, $background_color), $newlines);
+        $this->processArgs();
+        $this->initialize($settings);
     }
     
     /**
@@ -133,12 +44,12 @@ class Cli
      * @param	bool $secure
      */
     public function promptInput($prompt_message, $secure = false) {
-        $input = NULL;
+        $input = null;
         if (!empty($prompt_message)) {
-            $this->write("$prompt_message: ", 0);
+            $this->stdio->write("$prompt_message: ");
             
             if ($secure) {
-                if ($this->_isWindows()) {
+                if (StdIO::isWindows()) {
                     
                     $exe = __DIR__ . '/bin/hiddeninput.exe';
                     // handle code running from a phar
@@ -149,32 +60,32 @@ class Cli
                     }
                     
                     $input = rtrim(shell_exec($exe));
-                    $this->nl();
+                    $this->stdio->ln();
                     
                     if (isset($tmp_exe)) {
                         unlink($tmp_exe);
                     }
                     
-                } elseif ($this->_hasStty()) {
+                } elseif (StdIO::hasStty()) {
                     
                     $stty_mode = shell_exec('stty -g');
                     
                     shell_exec('stty -echo');
-                    $input = trim($this->read());
+                    $input = trim($this->stdio->read());
                     shell_exec(sprintf('stty %s', $stty_mode));
-                    $this->nl();
+                    $this->stdio->ln();
                     
-                } elseif ($this->color_supported) {
+                } elseif ($this->stdio->hasColorSupport()) {
                     
-                    $this->write("\033[0;30m\033[40m", 0);
-                    $input = trim($this->read());
-                    $this->write("\033[0m", 0);
+                    $this->stdio->write("\033[0;30m\033[40m");
+                    $input = trim($this->stdio->read());
+                    $this->stdio->write("\033[0m");
                     
                 } else {
                     throw new CliException('Secure input not supported.');
                 }
             } else {
-                $input = trim($this->read());
+                $input = trim($this->stdio->read());
             }
         }
         return $input;
@@ -205,7 +116,7 @@ class Cli
                     foreach ($cmd_info as $info) {
                         if (!empty($info[0])) {
                             $opt = substr(strval($info[0]), 0, 1);
-                            $parsed_commands[$cmd][$opt] = array('opt' => NULL, 'long_opt' => NULL, 'description' => NULL);
+                            $parsed_commands[$cmd][$opt] = array('opt' => null, 'long_opt' => null, 'description' => null);
                             $parsed_commands[$cmd][$opt]['opt'] = '-' . $opt;
                             empty($info[1]) or $parsed_commands[$cmd][$opt]['long_opt'] = '--' . strval($info[1]);
                             empty($info[2]) or $parsed_commands[$cmd][$opt]['description'] = strval($info[2]);
@@ -219,10 +130,10 @@ class Cli
             throw new CliException('Invalid callable shell_handler provided: ' . $callable_name);
         }
         
-        $this->shell_history = './.history_' . $shell_name;
+        $this->shellHistory = './.history_' . $shell_name;
         
-        if ($this->readlineSupported) {
-            readline_read_history($this->shell_history);
+        if ($this->stdio->hasReadline()) {
+            readline_read_history($this->shellHistory);
             readline_completion_function(function () use ($list) {
                 return $list;
             });
@@ -239,36 +150,36 @@ To exit the shell, type ^D or exit.
 
 EOF;
         
-        $this->write($header);
+        $this->stdio->writeln($header);
         
         do {
             
-            $command = $this->read($prompt . ' ');
+            $command = $this->stdio->read($prompt . ' ');
             
             if ($command === false or $command == 'exit') {
-                $this->nl();
-                $this->write('bye', 2);
+                $this->stdio->ln();
+                $this->stdio->write('bye', 2);
                 break;
             }
             
             $res = true;
             
             if (!empty($command)) {
-                if ($this->readlineSupported) {
+                if ($this->stdio->hasReadline()) {
                     readline_add_history($command);
-                    readline_write_history($this->shell_history);
+                    readline_write_history($this->shellHistory);
                 }
                 
                 $args = array_map('trim', explode(' ', $command));
                 $cmd = array_shift($args);
                 
                 if ($cmd == 'list') {
-                    $this->write('List of valid commands:');
-                    $this->write($list, 2);
+                    $this->stdio->writeln('List of valid commands:');
+                    $this->stdio->write($list, 2);
                     continue;
                 } elseif (!in_array($cmd, $list)) {
-                    $this->write(array("No command '$cmd' found.", 'Available commands are:'));
-                    $this->write($list, 2);
+                    $this->stdio->writeln(array("No command '$cmd' found.", 'Available commands are:'));
+                    $this->stdio->write($list, 2);
                     continue;
                 } else {
                     $opts = array();
@@ -281,7 +192,7 @@ EOF;
                                 $opts[$opt] = $args[$optval_key];
                             }
                         }
-                        $opt_help[] = $opt_info['opt'] . ', ' . $opt_info['long_opt'] . self::TAB . $opt_info['description'];
+                        $opt_help[] = $opt_info['opt'] . ', ' . $opt_info['long_opt'] . StdIO::TAB . $opt_info['description'];
                     }
 
                     if (in_array('-h', $args) or in_array('--help', $args)) {
@@ -291,7 +202,7 @@ EOF;
                             $help[] = 'Available options are:';
                             $help = array_merge($help, $opt_help);
                         }
-                        $this->write($help, 2);
+                        $this->stdio->write($help, 2);
                         continue;
                     }
 
@@ -300,32 +211,6 @@ EOF;
             }
             
         } while ($res !== false);
-    }
-    
-    /**
-     * Get colored text
-     * @param	string $text
-     * @param	string $foreground_color
-     * @param	string $background_color
-     */
-    public function colorizeText($text = '', $foreground_color = NULL, $background_color = NULL) {
-        $str = '';
-        $colored = false;
-        if (!empty($text) and $this->color_supported) {
-            if (!empty($foreground_color) and isset($this->foreground_colors[$foreground_color])) {
-                $str .= "\033[" . $this->foreground_colors[$foreground_color] . "m";
-                $colored = true;
-            }
-            if (!empty($background_color) and isset($this->background_colors[$background_color])) {
-                $str .= "\033[" . $this->background_colors[$background_color] . "m";
-                $colored = true;
-            }
-        }
-        $str .= strval($text);
-        if ($colored) {
-            $str .= "\033[0m";
-        }
-        return $str;
     }
     
     /**
@@ -471,40 +356,40 @@ EOF;
      * Print Help Content
      */
     public function showHelp() {
-        $hw = $this->cli_width;
+        $hw = $this->stdio->getWidth();
         $text = array();
-        $text[] = $this->colorizeText(str_repeat('=', $hw), 'green');
-        $text[] = $this->colorizeText('Help for current command !', 'green');
-        $text[] = $this->colorizeText(str_repeat('-', $hw), 'green');
+        $text[] = $this->stdio->colorizeText(str_repeat('=', $hw), 'green');
+        $text[] = $this->stdio->colorizeText('Help for current command !', 'green');
+        $text[] = $this->stdio->colorizeText(str_repeat('-', $hw), 'green');
         if (!empty($this->args)) {
-            $text[] = $this->colorizeText('Given arguments: ', 'purple') . implode(', ', $this->args);
+            $text[] = $this->stdio->colorizeText('Given arguments: ', 'purple') . implode(', ', $this->args);
         } else {
-            $text[] = $this->colorizeText('No arguments given !', 'red');
+            $text[] = $this->stdio->colorizeText('No arguments given !', 'red');
         }
-        $text[] = self::NL;
+        $text[] = StdIO::EOL;
         if (!empty($this->options)) {
-            $text[] = $this->colorizeText('Registered options:', 'purple');
+            $text[] = $this->stdio->colorizeText('Registered options:', 'purple');
             $i = 1;
             foreach ($this->options as $opt => $option) {
-                $text[] = self::NL;
-                $text[] = $i . ')' . self::TAB . $this->colorizeText('Option: ', 'light_blue') . self::TAB . $opt;
-                $text[] = self::TAB . $this->colorizeText('Long Option: ', 'light_blue') . self::TAB . $option['long_opt'];
-                $text[] = self::TAB . $this->colorizeText('Description: ', 'light_blue') . self::TAB . $option['description'];
-                $text[] = self::TAB . $this->colorizeText('Required: ', 'light_blue') . self::TAB . (($option['required']) ? $this->colorizeText('Yes', 'green') : $this->colorizeText('No', 'red'));
-                $text[] = self::TAB . $this->colorizeText('Given Value: ', 'light_blue') . self::TAB . $option['value'];
+                $text[] = StdIO::EOL;
+                $text[] = $i . ')' . StdIO::TAB . $this->stdio->colorizeText('Option: ', 'light_blue') . StdIO::TAB . $opt;
+                $text[] = StdIO::TAB . $this->stdio->colorizeText('Long Option: ', 'light_blue') . StdIO::TAB . $option['long_opt'];
+                $text[] = StdIO::TAB . $this->stdio->colorizeText('Description: ', 'light_blue') . StdIO::TAB . $option['description'];
+                $text[] = StdIO::TAB . $this->stdio->colorizeText('Required: ', 'light_blue') . StdIO::TAB . (($option['required']) ? $this->stdio->colorizeText('Yes', 'green') : $this->stdio->colorizeText('No', 'red'));
+                $text[] = StdIO::TAB . $this->stdio->colorizeText('Given Value: ', 'light_blue') . StdIO::TAB . $option['value'];
                 $i++;
             }
         } else {
-            $text[] = $this->colorizeText('No options registered !', 'red');
+            $text[] = $this->stdio->colorizeText('No options registered !', 'red');
         }
-        if (!empty($this->help_note)) {
-            $text[] = self::NL;
-            $text[] = $this->colorizeText(str_repeat('-', $hw), 'yellow');
-            $text[] = wordwrap($this->help_note, $hw, self::NL, true);
-            $text[] = $this->colorizeText(str_repeat('-', $hw), 'yellow');
+        if (!empty($this->helpNote)) {
+            $text[] = StdIO::EOL;
+            $text[] = $this->stdio->colorizeText(str_repeat('-', $hw), 'yellow');
+            $text[] = wordwrap($this->helpNote, $hw, StdIO::EOL, true);
+            $text[] = $this->stdio->colorizeText(str_repeat('-', $hw), 'yellow');
         }
-        $text[] = $this->colorizeText(str_repeat('=', $hw), 'green');
-        $this->write($text);
+        $text[] = $this->stdio->colorizeText(str_repeat('=', $hw), 'green');
+        $this->stdio->writeln($text);
     }
     
     /**
@@ -518,7 +403,7 @@ EOF;
         if ($len) {
             $_msg = ($len < $_len) ? str_pad($msg, $_len) : $msg;
             $_len = $len;
-            $this->write(' ' . $_msg . (($passive) ? self::NL : self::CR), 0);
+            $this->stdio->write(' ' . $_msg . (($passive) ? StdIO::EOL : StdIO::CR));
         }
     }
     
@@ -531,7 +416,7 @@ EOF;
     public function showProgress($totalStep, $currentStep, $msg = 'Processing...') {
         if ($totalStep > 0) {
             $p = floor((($currentStep / $totalStep) * 100));
-            $this->write(' ' . $msg . ' ' . $p . '%' . (($p == 100) ? " Complete !" . self::NL : self::CR), 0);
+            $this->stdio->write(' ' . $msg . ' ' . $p . '%' . (($p == 100) ? " Complete !" . StdIO::EOL : StdIO::CR));
         }
     }
     
@@ -544,30 +429,8 @@ EOF;
         if ($totalStep > 0) {
             $p = floor((($currentStep / $totalStep) * 100));
             $b = '[' . str_pad(str_repeat('|', intval($p / 2)), 50, '_') . ']';
-            $this->write(' ' . $p . '% ' . self::TAB . $b . (($p == 100) ? self::NL : self::CR), 0);
+            $this->stdio->write(' ' . $p . '% ' . StdIO::TAB . $b . (($p == 100) ? StdIO::EOL : StdIO::CR));
         }
-    }
-    
-    /**
-     * Enable/Disable colored output
-     * @param	bool $colored
-     */
-    public function colorMode($colored = true) {
-        $this->color_supported = (!$this->_isWindows() and $colored) ? true : false;
-    }
-    
-    /**
-     * Get foreground colors
-     */
-    public function getForegroundColors() {
-        return array_keys($this->foreground_colors);
-    }
-    
-    /**
-     * Get background colors
-     */
-    public function getBackgroundColors() {
-        return array_keys($this->background_colors);
     }
     
     /**
@@ -580,34 +443,10 @@ EOF;
     }
     
     /**
-     * Get cli width
-     */
-    public function getWidth() {
-        return $this->cli_width;
-    }
-    
-    /**
-     * Print blank newlines
-     * @param	int $count
-     */
-    public function nl($count = 1) {
-        $this->write('', $count);
-    }
-    
-    /**
-     * Print horizontal rule
-     * @param	int $size
-     * @param	string $char
-     */
-    public function hr($size = 0, $char = '-') {
-        $this->write(str_repeat($char, ($size ? $size : $this->cli_width)));
-    }
-    
-    /**
      * Clear non-windows cli
      */
     public function clear() {
-        if (!$this->_isWindows()) {
+        if (!StdIO::isWindows()) {
             passthru('clear');
         }
     }
@@ -619,17 +458,14 @@ EOF;
         exit($status);
     }
     
-    protected function _initialize($settings) {
+    protected function initialize($settings) {
         if (is_array($settings)) {
-            $this->_registerOption('h', 'help', 'Shows help for current command.');
+            $this->registerOption('h', 'help', 'Shows help for current command.');
             if (isset($settings['options'])) {
-                $this->_registerOptions($settings['options']);
+                $this->registerOptions($settings['options']);
             }
             if (isset($settings['help_note'])) {
-                $this->_setHelpNote($settings['help_note']);
-            }
-            if (isset($settings['cli_width'])) {
-                $this->cli_width = (int) $settings['cli_width'];
+                $this->setHelpNote($settings['help_note']);
             }
             if ($this->isOption('h') or $this->isOption('help')) {
                 $this->showHelp();
@@ -638,7 +474,7 @@ EOF;
         }
     }
     
-    protected function _processArgs() {
+    protected function processArgs() {
         $_argc = isset($argc) ? $argc : $_SERVER['argc'];
         $_argv = isset($argv) ? $argv : $_SERVER['argv'];
         if ($_argc > 1) {
@@ -647,7 +483,7 @@ EOF;
         }
     }
     
-    protected function _parseOptions() {
+    protected function parseOptions() {
         if (!empty($this->options) and ! empty($this->args)) {
             foreach ($this->options as $opt => $option) {
                 $_opt = $opt;
@@ -664,8 +500,7 @@ EOF;
                     if (isset($this->args[$optval_key]) and ! preg_match('/^(-|--)/', $this->args[$optval_key])) {
                         $this->options[$opt]['value'] = $this->args[$optval_key];
                     } elseif ($option['required'] === true) {
-                        $this->cWrite('Error! Given option ' . $this->args[$opt_key] . ' requires a value.', 'red');
-                        $this->nl();
+                        $this->stdio->setColor('red')->write('Error! Given option ' . $this->args[$opt_key] . ' requires a value.', 2);
                         $this->showHelp();
                         $this->stop();
                     }
@@ -674,7 +509,7 @@ EOF;
         }
     }
     
-    protected function _registerOption($option, $long_option = NULL, $description = NULL, $required = false) {
+    protected function registerOption($option, $long_option = NULL, $description = NULL, $required = false) {
         if (!empty($option)) {
             $opt = '-' . substr(strval($option), 0, 1);
             $this->options[$opt] = array('long_opt' => NULL, 'description' => NULL, 'required' => false, 'value' => NULL);
@@ -684,46 +519,18 @@ EOF;
         }
     }
     
-    protected function _registerOptions($options) {
+    protected function registerOptions($options) {
         if (!empty($options) and is_array($options)) {
             foreach ($options as $option) {
                 if (is_array($option)) {
-                    call_user_func_array(array($this, '_registerOption'), $option);
+                    call_user_func_array(array($this, 'registerOption'), $option);
                 }
             }
         }
-        $this->_parseOptions();
+        $this->parseOptions();
     }
     
-    protected function _setHelpNote($help_note) {
-        empty($help_note) or $this->help_note = strval($help_note);
+    protected function setHelpNote($helpNote) {
+        empty($helpNote) or $this->helpNote = strval($helpNote);
     }
-    
-    protected function _isCli() {
-        return (php_sapi_name() == 'cli' or defined('STDIN'));
-    }
-    
-    protected function _isWindows() {
-        return (strtoupper(substr(php_uname('s'), 0, 3)) == 'WIN');
-    }
-    
-    protected function _hasStty() {
-        if (null !== self::$stty) {
-            return self::$stty;
-        }
-        
-        exec('stty 2>&1', $output, $exitcode);
-        
-        return self::$stty = $exitcode === 0;
-    }
-    
-    public function __destruct() {
-        if (is_resource($this->stdout)) {
-            fclose($this->stdout);
-        }
-        if (is_resource($this->stdin)) {
-            fclose($this->stdin);
-        }
-    }
-    
 }

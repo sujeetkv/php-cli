@@ -1,6 +1,7 @@
 #!/usr/bin/env php
 <?php
 require_once '../src/Cli.php';
+require_once '../src/StdIO.php';
 require_once '../src/CliException.php';
 
 use SujeetKumar\PhpCli\Cli;
@@ -14,17 +15,17 @@ $cli = new Cli($settings);
 do{
 	$username = $cli->promptInput('Enter Username');
 	$password = $cli->promptInput('Enter Password', true);
-	$cli->nl();
+	$cli->stdio->ln();
 	if($username == 'admin' and $password == '123456'){
 		$logged_in = true;
-		$cli->cWrite('You are logged in.','green');
+		$cli->stdio->setColor('green')->writeln('You are logged in.');
 	}else{
 		$logged_in = false;
-		$cli->cWrite('Invalid Username or Password. ','red');
-		$cli->nl();
+		$cli->stdio->setColor('red')->writeln('Invalid Username or Password. ');
+		$cli->stdio->ln();
 	}
 }while(! $logged_in);
 
-$cli->nl();
+$cli->stdio->ln();
 
-$cli->cWrite('Welcome !');
+$cli->stdio->writeln('Welcome !');

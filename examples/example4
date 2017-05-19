@@ -1,27 +1,28 @@
 #!/usr/bin/env php
 <?php
 require_once '../src/Cli.php';
+require_once '../src/StdIO.php';
 require_once '../src/CliException.php';
 
 use SujeetKumar\PhpCli\Cli;
 
 $settings = array(
-	'options' => array(
-		array('a',    'opta',    'demo description a'),
-		array('b',    'optb',    'b to stop script')
-	),
-	'help_note' => 'This script is meant for demonstration.'
+    'options' => array(
+        array('a', 'opta', 'demo description a'),
+        array('b', 'optb', 'b to stop script')
+    ),
+    'help_note' => 'This script is meant for demonstration.'
 );
 
 $cli = new Cli($settings);
 
-$cli->cWrite('Welcome Green', 'green');
-$cli->cWrite('Welcome Red', 'red');
-$cli->hr();
+$cli->stdio->setColor('green')->writeln('Welcome Green');
+$cli->stdio->setColor('red')->writeln('Welcome Red');
+$cli->stdio->hr();
 
-if($cli->isOption('b')){
-	$cli->cWrite('Bye');
-	$cli->stop();
+if ($cli->isOption('b')) {
+    $cli->stdio->writeln('Bye');
+    $cli->stop();
 }
 
 var_dump($cli->isValidOption('a'));
@@ -36,8 +37,8 @@ print_r($cli->getOptions('a'));
 
 print_r($cli->getOptions());
 
-$cli->write($cli->colorizeText($cli->getOptionValue('a'), 'red'));
+$cli->stdio->setColor('red')->writeln($cli->stdio->colorizeText($cli->getOptionValue('a')));
 
-$cli->nl();
+$cli->stdio->ln();
 
-$cli->cWrite($cli->getMemoryUsage());
+$cli->stdio->writeln($cli->getMemoryUsage());

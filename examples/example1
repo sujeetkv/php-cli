@@ -1,40 +1,40 @@
 #!/usr/bin/env php
 <?php
 require_once '../src/Cli.php';
+require_once '../src/StdIO.php';
 require_once '../src/CliException.php';
 
 use SujeetKumar\PhpCli\Cli;
 
 $settings = array(
-	'options' => array(
-		/*    short   long       description              required
-		      option  option                                      */
-		array('a',    'opta',    'demo description a',    true),
-		array('b',    'optb',    'demo description b'),
-		array('c',    'optc',    'demo description c')
-	),
-	'help_note' => 'This script is meant for demonstration.'
+    'options' => array(
+        /*  short  long    description           required
+            option option */
+        array('a', 'opta', 'demo description a', true),
+        array('b', 'optb', 'demo description b'),
+        array('c', 'optc', 'demo description c')
+    ),
+    'help_note' => 'This script is meant for demonstration.'
 );
 
 $cli = new Cli($settings);
 
-$cli->cWrite('Hello Cli.');
+$cli->stdio->writeln('Hello Cli.');
 
-$cli->bindOption('a', function($cli, $val){
-	$cli->cWrite('Hello '.$val);
+$cli->bindOption('a', function($cli, $val) {
+    $cli->stdio->writeln('Hello ' . $val);
 });
 
-$cli->bindOption('b', function($cli, $val){
-	$cli->cWrite('Hello '.$val);
+$cli->bindOption('b', function($cli, $val) {
+    $cli->stdio->writeln('Hello ' . $val);
 }, array('B'));
 
-
-function hello_c($cli){
-	$cli->cWrite('Hello C');
+function hello_c($cli) {
+    $cli->stdio->writeln('Hello C');
 }
 
 $cli->bindOption('c', 'hello_c');
 
-if($cli->isOption('c')){
-	hello_c($cli);
+if ($cli->isOption('c')) {
+    hello_c($cli);
 }

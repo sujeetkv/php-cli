@@ -1,6 +1,7 @@
 #!/usr/bin/env php
 <?php
 require_once '../src/Cli.php';
+require_once '../src/StdIO.php';
 require_once '../src/CliException.php';
 
 use SujeetKumar\PhpCli\Cli;
@@ -20,6 +21,6 @@ $commands = array(
 );
 
 $cli->promptShell('DemoShell', $commands, function ($cli, $command, $options) {
-    $cli->cWrite($command);
+    $cli->stdio->writeln($command);
     print_r($options);
 });

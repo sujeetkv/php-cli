@@ -1,6 +1,7 @@
 #!/usr/bin/env php
 <?php
 require_once '../src/Cli.php';
+require_once '../src/StdIO.php';
 require_once '../src/CliException.php';
 
 use SujeetKumar\PhpCli\Cli;
@@ -11,26 +12,26 @@ $settings = array(
 
 $cli = new Cli($settings);
 
-$cli->cWrite('Welcome !');
+$cli->stdio->writeln('Welcome !');
 
-$cli->nl();
+$cli->stdio->ln();
 
-$cli->cWrite('Progress Status Demo:');
+$cli->stdio->writeln('Progress Status Demo:');
 $cli->showStatus('Loading...');
 sleep(5);//do some stuff---
 $cli->showStatus('Loaded!', true);
 
-$cli->nl();
+$cli->stdio->ln();
 
-$cli->cWrite('Progress Count Demo:');
+$cli->stdio->writeln('Progress Count Demo:');
 for($i = 1; $i <= 10; $i++){
 	sleep(1);//do some stuff---
 	$cli->showStatus('Step '.$i, ($i==10?true:false));
 }
 
-$cli->nl();
+$cli->stdio->ln();
 
-$cli->cWrite('Progress Percent Demo:');
+$cli->stdio->writeln('Progress Percent Demo:');
 $total = 20;
 $cli->showProgress($total, 0); // start
 for($i=1; $i<=$total; $i++){
@@ -39,9 +40,9 @@ for($i=1; $i<=$total; $i++){
 	//----------------
 }
 
-$cli->nl();
+$cli->stdio->ln();
 
-$cli->cWrite('Progress Bar Demo:');
+$cli->stdio->writeln('Progress Bar Demo:');
 $total = 20;
 $cli->showProgressBar($total, 0); // start
 for($i=1; $i<=$total; $i++){
@@ -50,4 +51,4 @@ for($i=1; $i<=$total; $i++){
 	//----------------
 }
 
-$cli->nl();
+$cli->stdio->ln();
