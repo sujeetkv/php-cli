@@ -23,7 +23,7 @@ class StdIO
     protected $hasReadline = false;
     protected $hasColorSupport = false;
     protected $colorEnabled = true;
-    protected $cliWidth = 80;
+    protected $cliWidth = 75;
     protected static $stty = null;
     
     protected $foregroundColor = null;
@@ -81,10 +81,16 @@ class StdIO
         } else {
             $this->hasColorSupport = (function_exists('posix_isatty') && @posix_isatty($this->stream));
         }
+        
+        $width = (int) (isset($_SERVER['COLUMNS']) ? $_SERVER['COLUMNS'] : @exec('tput cols'));
+        if ($width) {
+            $this->cliWidth = $width;
+        }
     }
     
     /**
      * Read line from console
+     * 
      * @param string $prompt
      */
     public function read($prompt = '') {
@@ -100,6 +106,7 @@ class StdIO
     
     /**
      * Write text to console
+     * 
      * @param mixed $text
      * @param int $newlines
      */
@@ -116,6 +123,7 @@ class StdIO
     
     /**
      * Write text to console and add a new line at end
+     * 
      * @param mixed $text
      */
     public function writeln($text) {
@@ -124,6 +132,7 @@ class StdIO
     
     /**
      * Set color for next write operation
+     * 
      * @param string $foregroundColor
      * @param string $backgroundColor
      */
@@ -135,6 +144,7 @@ class StdIO
     
     /**
      * Get colored text
+     * 
      * @param string $text
      * @param string $foregroundColor
      * @param string $backgroundColor
@@ -167,6 +177,10 @@ class StdIO
         return $this->colorEnabled;
     }
     
+    public function enableColor($colorEnabled = true) {
+        $this->colorEnabled = $colorEnabled;
+    }
+    
     public function hasReadline() {
         return $this->hasReadline;
     }
@@ -194,6 +208,7 @@ class StdIO
     
     /**
      * Print blank newlines
+     * 
      * @param int $count
      */
     public function ln($count = 1) {
@@ -202,6 +217,7 @@ class StdIO
     
     /**
      * Print horizontal rule
+     * 
      * @param int $size
      * @param string $char
      */

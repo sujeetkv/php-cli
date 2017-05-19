@@ -22,6 +22,7 @@ class Cli
     
     /**
      * Initialize cli
+     * 
      * @param	array $settings
      */
     public function __construct($settings = array()) {
@@ -40,6 +41,7 @@ class Cli
     
     /**
      * Get standard input from console
+     * 
      * @param	string $prompt_message
      * @param	bool $secure
      */
@@ -93,6 +95,7 @@ class Cli
     
     /**
      * Create interactive shell on console
+     * 
      * @param	string $shell_name
      * @param	array $commands
      * @param	callable $shell_handler
@@ -215,6 +218,7 @@ EOF;
     
     /**
      * Get passed arguments
+     * 
      * @param	int $index
      * @param	string $default
      */
@@ -230,6 +234,7 @@ EOF;
     
     /**
      * Check if argument passed
+     * 
      * @param	string $option
      * @param	int $pos
      */
@@ -243,6 +248,7 @@ EOF;
     
     /**
      * Get registered options
+     * 
      * @param	string $option
      * @param	array $default
      */
@@ -281,6 +287,7 @@ EOF;
     
     /**
      * Get registered option value
+     * 
      * @param	string $option
      * @param	mixed $default
      */
@@ -299,6 +306,7 @@ EOF;
     
     /**
      * Check if valid registered option
+     * 
      * @param	string $option
      */
     public function isValidOption($option) {
@@ -316,6 +324,7 @@ EOF;
     
     /**
      * Check if option is registered and passed as argument
+     * 
      * @param	string $option
      * @param	int $pos
      */
@@ -325,6 +334,7 @@ EOF;
     
     /**
      * Bind function or method to registered option
+     * 
      * @param	string $option
      * @param	callable $callback
      * @param	array $params
@@ -394,6 +404,7 @@ EOF;
     
     /**
      * Print and Overwrite line, useful to show current status
+     * 
      * @param	string $msg
      * @param	bool $passive
      */
@@ -409,6 +420,7 @@ EOF;
     
     /**
      * Show progress percentage, to be used with loop
+     * 
      * @param	int $totalStep
      * @param	int $currentStep
      * @param	string $msg
@@ -422,6 +434,7 @@ EOF;
     
     /**
      * Show progress bar, to be used with loop
+     * 
      * @param	int $totalStep
      * @param	int $currentStep
      */
