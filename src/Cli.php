@@ -27,7 +27,7 @@ class Cli
      */
     public function __construct($settings = array()) {
         if (!StdIO::isCli()) {
-            throw new CliException('"' . get_class($this) . '" class only supports Command Line Interface.');
+            throw new CliException('"This program is only meant for Command Line Interface.');
         }
         
         ini_set('html_errors', 0);

@@ -9,17 +9,23 @@
 namespace SujeetKumar\PhpCli;
 
 /**
- * Table class
+ * TableLayout class
  */
-class Table {
-
-    /** @var string border between columns */
-    protected $border = ' ';
+class TableLayout
+{
+    /** @var string separator between columns */
+    protected $separator = ' ';
 
     /** @var int the terminal width */
     protected $maxWidth = 75;
+    
+    /** @var array default column widths */
+    protected $columnWidths = array();
+    
+    /** @var array default column alignments */
+    protected $columnAligns = array();
 
-    /** @var StdIO for IO */
+    /** @var StdIO class object */
     protected $stdio;
 
     /**
@@ -33,22 +39,23 @@ class Table {
     }
 
     /**
-     * The currently set border (defaults to ' ')
+     * The currently set separator (defaults to ' ')
      *
      * @return string
      */
-    public function getBorder() {
-        return $this->border;
+    public function getSeparator() {
+        return $this->separator;
     }
 
     /**
      * Set the border. The border is set between each column. Its width is
      * added to the column widths.
      *
-     * @param string $border
+     * @param string $separator
      */
-    public function setBorder($border) {
-        $this->border = $border;
+    public function setSeparator($separator) {
+        $this->separator = $separator;
+        return $this;
     }
 
     /**
@@ -67,6 +74,67 @@ class Table {
      */
     public function setMaxWidth($max) {
         $this->maxWidth = $max;
+        return $this;
+    }
+    
+    /**
+     * Set default width of columns
+     *
+     * @param array $columnWidths list of column widths (in characters, percent or '*')
+     */
+    public function setColWidths($columnWidths) {
+        $this->columnWidths = $this->calculateColLengths($columnWidths);
+        return $this;
+    }
+    
+    /**
+     * Set default alignment of columns
+     *
+     * @param array $columnAligns list of column alignments (left or right)
+     */
+    public function setColAligns($columnAligns) {
+        $this->columnAligns = $columnAligns;
+        return $this;
+    }
+    
+    /**
+     * Displays text in multiple word wrapped columns
+     *
+     * @param array $texts list of texts for each column
+     * @param array $colors A list of color names to use for each column. use empty string for default
+     * @param array $columnWidths list of column widths (in characters, percent or '*')
+     * @param array $columnAligns list of column alignments (left or right)
+     */
+    public function formatRow($texts, $colors = array(), $columnWidths = array(), $columnAligns = array()) {
+        $columnWidths = empty($columnWidths) ? $this->columnWidths : $this->calculateColLengths($columnWidths);
+        empty($columnAligns) && $columnAligns = $this->columnAligns;
+        
+        $wrapped = array();
+        $maxlen = 0;
+
+        foreach ($columnWidths as $col => $width) {
+            $wrapped[$col] = explode(StdIO::LF, $this->wordwrap($texts[$col], $width, StdIO::LF, true));
+            $len = count($wrapped[$col]);
+            if ($len > $maxlen) {
+                $maxlen = $len;
+            }
+        }
+
+        $last = count($columnWidths) - 1;
+        $out = array();
+        for ($i = 0; $i < $maxlen; $i++) {
+            foreach ($columnWidths as $col => $width) {
+                $val = isset($wrapped[$col][$i]) ? $wrapped[$col][$i] : '';
+                $align = (isset($columnAligns[$col]) && $columnAligns[$col] == 'right') ? '' : '-';
+                $chunk = sprintf('%' . $align . $width . 's', $val);
+                if (isset($colors[$col]) && $colors[$col]) {
+                    $chunk = $this->stdio->colorizeText($chunk, $colors[$col]);
+                }
+                $out[] = $chunk;
+            }
+        }
+        
+        return implode($this->separator, $out);
     }
 
     /**
@@ -80,8 +148,7 @@ class Table {
      */
     protected function calculateColLengths($columnWidths) {
         $idx = 0;
-        $border = $this->strlen($this->border);
-        $fixed = (count($columnWidths) - 1) * $border; // borders are used already
+        $fixed = (count($columnWidths) - 1) * $this->strlen($this->separator); // separator are used already
         $fluid = -1;
 
         // first pass for format check and fixed columns
@@ -101,7 +168,7 @@ class Table {
                     $fluid = $idx;
                     continue;
                 } else {
-                    throw new Exception('Only one fluid column allowed!');
+                    throw new CliException('Only one fluid column allowed!');
                 }
             }
             throw new CliException("Unknown column format $col");
@@ -125,7 +192,7 @@ class Table {
 
         $remain = $this->maxWidth - $alloc;
         if ($remain < 0) {
-            throw new Exception('Wanted column widths exceed available space');
+            throw new CliException('Wanted column widths exceed available space');
         }
 
         // assign remaining space
@@ -136,52 +203,6 @@ class Table {
         }
 
         return $columnWidths;
-    }
-
-    /**
-     * Displays text in multiple word wrapped columns
-     *
-     * @param array $columnWidths list of column widths (in characters, percent or '*')
-     * @param array $texts list of texts for each column
-     * @param array $colors A list of color names to use for each column. use empty string for default
-     */
-    public function format($columnWidths, $texts, $colors = array()) {
-        $columnWidths = $this->calculateColLengths($columnWidths);
-
-        $wrapped = array();
-        $maxlen = 0;
-
-        foreach ($columnWidths as $col => $width) {
-            $wrapped[$col] = explode(StdIO::LF, $this->wordwrap($texts[$col], $width, StdIO::LF, true));
-            $len = count($wrapped[$col]);
-            if ($len > $maxlen) {
-                $maxlen = $len;
-            }
-        }
-
-        $last = count($columnWidths) - 1;
-        $out = '';
-        for ($i = 0; $i < $maxlen; $i++) {
-            foreach ($columnWidths as $col => $width) {
-                if (isset($wrapped[$col][$i])) {
-                    $val = $wrapped[$col][$i];
-                } else {
-                    $val = '';
-                }
-                $chunk = sprintf('%-' . $width . 's', $val);
-                if (isset($colors[$col]) && $colors[$col]) {
-                    $chunk = $this->stdio->colorizeText($chunk, $colors[$col]);
-                }
-                $out .= $chunk;
-
-                // border
-                if ($col != $last) {
-                    $out .= $this->border;
-                }
-            }
-            $out .= StdIO::EOL;
-        }
-        return $out;
     }
 
     /**
@@ -211,6 +232,7 @@ class Table {
     }
 
     /**
+     * wordwrap with multibyte support
      * @param string $str
      * @param int $width
      * @param string $break
