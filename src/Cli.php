@@ -15,8 +15,8 @@ class Cli
 {
     public $stdio;
     public $args;
+    public $prompt;
     protected $helpNote = '';
-    protected $shellHistory = './.history_cli';
     
     /**
      * Initialize cli
@@ -31,8 +31,9 @@ class Cli
         ini_set('html_errors', 0);
         set_time_limit(0);
         
-        $this->args = new Args();
         $this->stdio = new StdIO();
+        $this->args = new Args();
+        $this->prompt = new Prompt($this);
         
         $this->initialize($settings);
     }
@@ -45,178 +46,12 @@ class Cli
             if (isset($settings['helpNote'])) {
                 $this->setHelpNote($settings['helpNote']);
             }
+            var_dump($this->args->isOption('h'));
             if ($this->args->isOption('h') || $this->args->isOption('help')) {
                 $this->showHelp($this->args);
                 $this->stop();
             }
         }
-    }
-    
-    /**
-     * Get standard input from console
-     * 
-     * @param string $prompt_message
-     * @param bool $secure
-     */
-    public function promptInput($prompt_message, $secure = false) {
-        $input = null;
-        if (!empty($prompt_message)) {
-            $this->stdio->write("$prompt_message: ");
-            if ($secure) {
-                if (StdIO::isWindows()) {
-                    $exe = __DIR__ . '/bin/hiddeninput.exe';
-                    // handle code running from a phar
-                    if ('phar:' === substr(__FILE__, 0, 5)) {
-                        $tmp_exe = sys_get_temp_dir() . '/hiddeninput.exe';
-                        copy($exe, $tmp_exe);
-                        $exe = $tmp_exe;
-                    }
-                    $input = rtrim(shell_exec($exe));
-                    $this->stdio->ln();
-                    if (isset($tmp_exe)) {
-                        unlink($tmp_exe);
-                    }
-                } elseif (StdIO::hasStty()) {
-                    $stty_mode = shell_exec('stty -g');
-                    shell_exec('stty -echo');
-                    $input = trim($this->stdio->read());
-                    shell_exec(sprintf('stty %s', $stty_mode));
-                    $this->stdio->ln();
-                } elseif ($this->stdio->hasColorSupport()) {
-                    $this->stdio->write("\033[0;30m\033[40m");
-                    $input = trim($this->stdio->read());
-                    $this->stdio->write("\033[0m");
-                } else {
-                    throw new CliException('Secure input not supported.');
-                }
-            } else {
-                $input = trim($this->stdio->read());
-            }
-        }
-        return $input;
-    }
-    
-    /**
-     * Create interactive shell on console
-     * 
-     * @param string $shell_name
-     * @param array $commands
-     * @param callable $shell_handler
-     * @param string $prompt
-     */
-    public function promptShell($shell_name, $commands, $shell_handler, $prompt = '>') {
-        if (empty($commands) or !is_array($commands)) {
-            
-            throw new CliException('Invalid variable commands provided.');
-            
-        } else {
-            $commands['list'] = array();
-            
-            $list = array_keys($commands);
-            $parsed_commands = array();
-            
-            foreach ($commands as $cmd => $cmd_info) {
-                $parsed_commands[$cmd] = array();
-                
-                if (is_array($cmd_info)) {
-                    foreach ($cmd_info as $info) {
-                        if (!empty($info[0])) {
-                            $opt = substr(strval($info[0]), 0, 1);
-                            $parsed_commands[$cmd][$opt] = array('opt' => null, 'long_opt' => null, 'description' => null);
-                            $parsed_commands[$cmd][$opt]['opt'] = '-' . $opt;
-                            empty($info[1]) or $parsed_commands[$cmd][$opt]['long_opt'] = '--' . strval($info[1]);
-                            empty($info[2]) or $parsed_commands[$cmd][$opt]['description'] = strval($info[2]);
-                        }
-                    }
-                }
-            }
-        }
-        
-        if (!is_callable($shell_handler, false, $callable_name)) {
-            throw new CliException('Invalid callable shell_handler provided: ' . $callable_name);
-        }
-        
-        $this->shellHistory = './.history_' . $shell_name;
-        
-        if ($this->stdio->hasReadline()) {
-            readline_read_history($this->shellHistory);
-            readline_completion_function(function () use ($list) {
-                return $list;
-            });
-        }
-        
-        $header = <<<EOF
-
-Welcome to the {$shell_name} shell.
-
-At the prompt, type list to get a list of 
-available commands.
-
-To exit the shell, type ^D or exit.
-
-EOF;
-        
-        $this->stdio->writeln($header);
-        
-        do {
-            
-            $command = $this->stdio->read($prompt . ' ');
-            
-            if ($command === false or $command == 'exit') {
-                $this->stdio->ln();
-                $this->stdio->write('bye', 2);
-                break;
-            }
-            
-            $res = true;
-            
-            if (!empty($command)) {
-                if ($this->stdio->hasReadline()) {
-                    readline_add_history($command);
-                    readline_write_history($this->shellHistory);
-                }
-                
-                $args = array_map('trim', explode(' ', $command));
-                $cmd = array_shift($args);
-                
-                if ($cmd == 'list') {
-                    $this->stdio->writeln('List of valid commands:');
-                    $this->stdio->write($list, 2);
-                    continue;
-                } elseif (!in_array($cmd, $list)) {
-                    $this->stdio->writeln(array("No command '$cmd' found.", 'Available commands are:'));
-                    $this->stdio->write($list, 2);
-                    continue;
-                } else {
-                    $opts = array();
-                    $opt_help = array();
-                    foreach ($parsed_commands[$cmd] as $opt => $opt_info) {
-                        if (($opt_key = array_search($opt_info['opt'], $args)) !== false or ($opt_key = array_search($opt_info['long_opt'], $args)) !== false) {
-                            $opts[$opt] = NULL;
-                            $optval_key = $opt_key + 1;
-                            if (isset($args[$optval_key]) and !preg_match('/^(-|--)/', $args[$optval_key])) {
-                                $opts[$opt] = $args[$optval_key];
-                            }
-                        }
-                        $opt_help[] = $opt_info['opt'] . ', ' . $opt_info['long_opt'] . StdIO::TAB . $opt_info['description'];
-                    }
-
-                    if (in_array('-h', $args) or in_array('--help', $args)) {
-                        $help = array();
-                        $help[] = "Usage: $cmd [OPTION] [OPTION VALUE] ...";
-                        if (!empty($opt_help)) {
-                            $help[] = 'Available options are:';
-                            $help = array_merge($help, $opt_help);
-                        }
-                        $this->stdio->write($help, 2);
-                        continue;
-                    }
-
-                    $res = call_user_func($shell_handler, $this, $cmd, $opts);
-                }
-            }
-            
-        } while ($res !== false);
     }
     
     /**
@@ -253,8 +88,9 @@ EOF;
      * Print Help Content
      * 
      * @param Args $args
+     * @param mixed $helpNote
      */
-    public function showHelp($args) {
+    public function showHelp($args, $helpNote = null) {
         $hw = $this->stdio->getWidth();
         $text = array();
         $tableLayout = new TableLayout($this->stdio);
@@ -274,8 +110,11 @@ EOF;
             }
             $tableLayout->setColWidths(array('*'));
         }
-        empty($this->helpNote) || $text[] = StdIO::EOL . $tableLayout->formatRow(array($this->helpNote));
-        $this->stdio->writeln($text);
+        if (false !== $helpNote) {
+            empty($helpNote) && $helpNote = $this->helpNote;
+            empty($helpNote) || $text[] = StdIO::EOL . $tableLayout->formatRow(array($helpNote));
+        }
+        $this->stdio->write($text, 2);
     }
     
     /**

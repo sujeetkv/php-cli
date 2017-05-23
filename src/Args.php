@@ -96,6 +96,10 @@ class Args
         }
     }
     
+    public function getOption($option = null, $default = null) {
+        
+    }
+    
     /**
      * Get registered options
      * 
@@ -149,7 +153,7 @@ class Args
     }
     
     protected function parseOptions() {
-        if (!empty($this->options) && ! empty($this->arguments)) {
+        if (!empty($this->options) && !empty($this->arguments)) {
             foreach ($this->options[$this->command] as $opt => $optInfo) {
                 if (($optKey = array_search($optInfo['opt'], $this->arguments)) !== false || ($optKey = array_search($optInfo['longOpt'], $this->arguments)) !== false) {
                     $optValKey = $optKey + 1;

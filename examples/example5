@@ -2,12 +2,15 @@
 <?php
 require_once '../src/Cli.php';
 require_once '../src/StdIO.php';
+require_once '../src/Args.php';
+require_once '../src/Prompt.php';
+require_once '../src/TableLayout.php';
 require_once '../src/CliException.php';
 
 use SujeetKumar\PhpCli\Cli;
 
 $settings = array(
-    'help_note' => 'This script is meant for demonstration.'
+    'helpNote' => 'This script is meant for demonstration.'
 );
 
 $cli = new Cli($settings);
@@ -20,7 +23,7 @@ $commands = array(
     'world' => array()
 );
 
-$cli->promptShell('DemoShell', $commands, function ($cli, $command, $options) {
+$cli->prompt->createShell('DemoShell', $commands, function ($cli, $command, $options) {
     $cli->stdio->writeln($command);
     print_r($options);
 });
