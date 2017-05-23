@@ -13,17 +13,15 @@ namespace SujeetKumar\PhpCli;
  */
 class Cli
 {
-    protected $args = array();
-    protected $options = array();
+    public $stdio;
+    public $args;
     protected $helpNote = '';
     protected $shellHistory = './.history_cli';
-    
-    public $stdio;
     
     /**
      * Initialize cli
      * 
-     * @param	array $settings
+     * @param array $settings
      */
     public function __construct($settings = array()) {
         if (!StdIO::isCli()) {
@@ -33,26 +31,39 @@ class Cli
         ini_set('html_errors', 0);
         set_time_limit(0);
         
+        $this->args = new Args();
         $this->stdio = new StdIO();
         
-        $this->processArgs();
         $this->initialize($settings);
+    }
+    
+    public function initialize($settings) {
+        if (is_array($settings)) {
+            if (isset($settings['commands'])) {
+                $this->args->registerCommands($settings['commands']);
+            }
+            if (isset($settings['helpNote'])) {
+                $this->setHelpNote($settings['helpNote']);
+            }
+            if ($this->args->isOption('h') || $this->args->isOption('help')) {
+                $this->showHelp($this->args);
+                $this->stop();
+            }
+        }
     }
     
     /**
      * Get standard input from console
      * 
-     * @param	string $prompt_message
-     * @param	bool $secure
+     * @param string $prompt_message
+     * @param bool $secure
      */
     public function promptInput($prompt_message, $secure = false) {
         $input = null;
         if (!empty($prompt_message)) {
             $this->stdio->write("$prompt_message: ");
-            
             if ($secure) {
                 if (StdIO::isWindows()) {
-                    
                     $exe = __DIR__ . '/bin/hiddeninput.exe';
                     // handle code running from a phar
                     if ('phar:' === substr(__FILE__, 0, 5)) {
@@ -60,29 +71,21 @@ class Cli
                         copy($exe, $tmp_exe);
                         $exe = $tmp_exe;
                     }
-                    
                     $input = rtrim(shell_exec($exe));
                     $this->stdio->ln();
-                    
                     if (isset($tmp_exe)) {
                         unlink($tmp_exe);
                     }
-                    
                 } elseif (StdIO::hasStty()) {
-                    
                     $stty_mode = shell_exec('stty -g');
-                    
                     shell_exec('stty -echo');
                     $input = trim($this->stdio->read());
                     shell_exec(sprintf('stty %s', $stty_mode));
                     $this->stdio->ln();
-                    
                 } elseif ($this->stdio->hasColorSupport()) {
-                    
                     $this->stdio->write("\033[0;30m\033[40m");
                     $input = trim($this->stdio->read());
                     $this->stdio->write("\033[0m");
-                    
                 } else {
                     throw new CliException('Secure input not supported.');
                 }
@@ -96,10 +99,10 @@ class Cli
     /**
      * Create interactive shell on console
      * 
-     * @param	string $shell_name
-     * @param	array $commands
-     * @param	callable $shell_handler
-     * @param	string $prompt
+     * @param string $shell_name
+     * @param array $commands
+     * @param callable $shell_handler
+     * @param string $prompt
      */
     public function promptShell($shell_name, $commands, $shell_handler, $prompt = '>') {
         if (empty($commands) or !is_array($commands)) {
@@ -217,134 +220,18 @@ EOF;
     }
     
     /**
-     * Get passed arguments
-     * 
-     * @param	int $index
-     * @param	string $default
-     */
-    public function getArgs($index = NULL, $default = NULL) {
-        if ($index === NULL) {
-            return $this->args;
-        } elseif (array_key_exists($index, $this->args)) {
-            return $this->args[$index];
-        } else {
-            return $default;
-        }
-    }
-    
-    /**
-     * Check if argument passed
-     * 
-     * @param	string $option
-     * @param	int $pos
-     */
-    public function hasArg($option, $pos = NULL) {
-        if ($pos === NULL) {
-            return (in_array('-' . $option, $this->args) or in_array('--' . $option, $this->args));
-        } else {
-            return (isset($this->args[$pos]) and ( $this->args[$pos] == '-' . $option or $this->args[$pos] == '--' . $option));
-        }
-    }
-    
-    /**
-     * Get registered options
-     * 
-     * @param	string $option
-     * @param	array $default
-     */
-    public function getOptions($option = NULL, $default = array()) {
-        $val = $default;
-        if (!empty($this->options)) {
-            if ($option === NULL) {
-                $_val = array();
-                foreach ($this->options as $opt => $optVal) {
-                    $_val[] = array(
-                        'opt' => $opt,
-                        'long_opt' => $optVal['long_opt'],
-                        'description' => $optVal['description'],
-                        'required' => $optVal['required'],
-                        'value' => $optVal['value']
-                    );
-                }
-                $val = $_val;
-            } else {
-                foreach ($this->options as $opt => $optVal) {
-                    if ('-' . $option == $opt or '--' . $option == $optVal['long_opt']) {
-                        $val = array(
-                            'opt' => $opt,
-                            'long_opt' => $optVal['long_opt'],
-                            'description' => $optVal['description'],
-                            'required' => $optVal['required'],
-                            'value' => $optVal['value']
-                        );
-                        break;
-                    }
-                }
-            }
-        }
-        return $val;
-    }
-    
-    /**
-     * Get registered option value
-     * 
-     * @param	string $option
-     * @param	mixed $default
-     */
-    public function getOptionValue($option, $default = NULL) {
-        $val = $default;
-        if (!empty($this->options)) {
-            foreach ($this->options as $opt => $optVal) {
-                if ('-' . $option == $opt or '--' . $option == $optVal['long_opt']) {
-                    $val = $optVal['value'];
-                    break;
-                }
-            }
-        }
-        return $val;
-    }
-    
-    /**
-     * Check if valid registered option
-     * 
-     * @param	string $option
-     */
-    public function isValidOption($option) {
-        $ret = false;
-        if (!empty($this->options)) {
-            foreach ($this->options as $opt => $val) {
-                if ('-' . $option == $opt or '--' . $option == $val['long_opt']) {
-                    $ret = true;
-                    break;
-                }
-            }
-        }
-        return $ret;
-    }
-    
-    /**
-     * Check if option is registered and passed as argument
-     * 
-     * @param	string $option
-     * @param	int $pos
-     */
-    public function isOption($option, $pos = NULL) {
-        return ($this->isValidOption($option) and $this->hasArg($option, $pos));
-    }
-    
-    /**
      * Bind function or method to registered option
      * 
-     * @param	string $option
-     * @param	callable $callback
-     * @param	array $params
+     * @param string $option
+     * @param callable $callback
+     * @param array $params
      */
     public function bindOption($option, $callback, $params = array()) {
-        if ($option = $this->getOptions($option)) {
+        if ($option = $this->args->getOptions($option)) {
             $opt = substr($option['opt'], 1);
-            $long_opt = substr($option['long_opt'], 2);
+            $longOpt = substr($option['longOpt'], 2);
             if (!is_array($params)) {
-                throw new CliException('Not a valid argument "params" to "' . __METHOD__ . '" for option "' . $opt . '"');
+                throw new CliException('Invalid argument "params" to ' . __METHOD__ . ' for option "' . $opt . '"');
             }
             if (!empty($params)) {
                 array_unshift($params, $this);
@@ -352,9 +239,9 @@ EOF;
             } else {
                 $_params = array($this, $option['value']);
             }
-            if ($this->isOption($opt) or $this->isOption($long_opt)) {
-                if (!is_callable($callback, false, $callback_name)) {
-                    throw new CliException('Not a valid callback to "' . __METHOD__ . '" for option "' . $opt . '"');
+            if ($this->args->isOption($opt) || $this->args->isOption($longOpt)) {
+                if (!is_callable($callback, false, $callbackName)) {
+                    throw new CliException('Invalid callback ' . $callbackName . ' to ' . __METHOD__ . ' for option "' . $opt . '"');
                 } else {
                     call_user_func_array($callback, $_params);
                 }
@@ -364,41 +251,30 @@ EOF;
     
     /**
      * Print Help Content
+     * 
+     * @param Args $args
      */
-    public function showHelp() {
+    public function showHelp($args) {
         $hw = $this->stdio->getWidth();
         $text = array();
-        $text[] = $this->stdio->colorizeText(str_repeat('=', $hw), 'green');
-        $text[] = $this->stdio->colorizeText('Help for current command !', 'green');
-        $text[] = $this->stdio->colorizeText(str_repeat('-', $hw), 'green');
-        if (!empty($this->args)) {
-            $text[] = $this->stdio->colorizeText('Given arguments: ', 'purple') . implode(', ', $this->args);
+        $tableLayout = new TableLayout($this->stdio);
+        $options = $args->getOptions();
+        if (empty($options)) {
+            $text[] = $tableLayout->formatRow(array('Usage: ' . $args->getCommand()));
         } else {
-            $text[] = $this->stdio->colorizeText('No arguments given !', 'red');
-        }
-        $text[] = StdIO::EOL;
-        if (!empty($this->options)) {
-            $text[] = $this->stdio->colorizeText('Registered options:', 'purple');
-            $i = 1;
-            foreach ($this->options as $opt => $option) {
-                $text[] = StdIO::EOL;
-                $text[] = $i . ')' . StdIO::TAB . $this->stdio->colorizeText('Option: ', 'light_blue') . StdIO::TAB . $opt;
-                $text[] = StdIO::TAB . $this->stdio->colorizeText('Long Option: ', 'light_blue') . StdIO::TAB . $option['long_opt'];
-                $text[] = StdIO::TAB . $this->stdio->colorizeText('Description: ', 'light_blue') . StdIO::TAB . $option['description'];
-                $text[] = StdIO::TAB . $this->stdio->colorizeText('Required: ', 'light_blue') . StdIO::TAB . (($option['required']) ? $this->stdio->colorizeText('Yes', 'green') : $this->stdio->colorizeText('No', 'red'));
-                $text[] = StdIO::TAB . $this->stdio->colorizeText('Given Value: ', 'light_blue') . StdIO::TAB . $option['value'];
-                $i++;
+            $text[] = $tableLayout->formatRow(array('Usage: ' . $args->getCommand() . ' [OPTION] [VALUE] ...')) . StdIO::EOL;
+            $text[] = $tableLayout->formatRow(array('Available options are:'));
+            $tableLayout->setColWidths(array('5%', '20%', '*'));
+            foreach ($options as $opt) {
+                $text[] = $tableLayout->formatRow(array(
+                    '',
+                    $opt['opt'] . ', ' . $opt['longOpt'],
+                    $opt['description']
+                ));
             }
-        } else {
-            $text[] = $this->stdio->colorizeText('No options registered !', 'red');
+            $tableLayout->setColWidths(array('*'));
         }
-        if (!empty($this->helpNote)) {
-            $text[] = StdIO::EOL;
-            $text[] = $this->stdio->colorizeText(str_repeat('-', $hw), 'yellow');
-            $text[] = wordwrap($this->helpNote, $hw, StdIO::EOL, true);
-            $text[] = $this->stdio->colorizeText(str_repeat('-', $hw), 'yellow');
-        }
-        $text[] = $this->stdio->colorizeText(str_repeat('=', $hw), 'green');
+        empty($this->helpNote) || $text[] = StdIO::EOL . $tableLayout->formatRow(array($this->helpNote));
         $this->stdio->writeln($text);
     }
     
@@ -471,79 +347,7 @@ EOF;
         exit($status);
     }
     
-    protected function initialize($settings) {
-        if (is_array($settings)) {
-            $this->registerOption('h', 'help', 'Shows help for current command.');
-            if (isset($settings['options'])) {
-                $this->registerOptions($settings['options']);
-            }
-            if (isset($settings['help_note'])) {
-                $this->setHelpNote($settings['help_note']);
-            }
-            if ($this->isOption('h') or $this->isOption('help')) {
-                $this->showHelp();
-                $this->stop();
-            }
-        }
-    }
-    
-    protected function processArgs() {
-        $_argc = isset($argc) ? $argc : $_SERVER['argc'];
-        $_argv = isset($argv) ? $argv : $_SERVER['argv'];
-        if ($_argc > 1) {
-            array_shift($_argv);
-            $this->args = $_argv;
-        }
-    }
-    
-    protected function parseOptions() {
-        if (!empty($this->options) and ! empty($this->args)) {
-            foreach ($this->options as $opt => $option) {
-                $_opt = $opt;
-                $_long_option = $option['long_opt'];
-                $flipped_args = array_flip($this->args);
-                $opt_key = NULL;
-                if (array_key_exists($_opt, $flipped_args)) {
-                    $opt_key = $flipped_args[$_opt];
-                } elseif (array_key_exists($_long_option, $flipped_args)) {
-                    $opt_key = $flipped_args[$_long_option];
-                }
-                if ($opt_key !== NULL) {
-                    $optval_key = $opt_key + 1;
-                    if (isset($this->args[$optval_key]) and ! preg_match('/^(-|--)/', $this->args[$optval_key])) {
-                        $this->options[$opt]['value'] = $this->args[$optval_key];
-                    } elseif ($option['required'] === true) {
-                        $this->stdio->setColor('red')->write('Error! Given option ' . $this->args[$opt_key] . ' requires a value.', 2);
-                        $this->showHelp();
-                        $this->stop();
-                    }
-                }
-            }
-        }
-    }
-    
-    protected function registerOption($option, $long_option = NULL, $description = NULL, $required = false) {
-        if (!empty($option)) {
-            $opt = '-' . substr(strval($option), 0, 1);
-            $this->options[$opt] = array('long_opt' => NULL, 'description' => NULL, 'required' => false, 'value' => NULL);
-            empty($long_option) or $this->options[$opt]['long_opt'] = '--' . strval($long_option);
-            empty($description) or $this->options[$opt]['description'] = strval($description);
-            $this->options[$opt]['required'] = (bool) $required;
-        }
-    }
-    
-    protected function registerOptions($options) {
-        if (!empty($options) and is_array($options)) {
-            foreach ($options as $option) {
-                if (is_array($option)) {
-                    call_user_func_array(array($this, 'registerOption'), $option);
-                }
-            }
-        }
-        $this->parseOptions();
-    }
-    
-    protected function setHelpNote($helpNote) {
-        empty($helpNote) or $this->helpNote = strval($helpNote);
+    public function setHelpNote($helpNote) {
+        empty($helpNote) || $this->helpNote = strval($helpNote);
     }
 }

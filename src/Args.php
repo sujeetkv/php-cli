@@ -40,22 +40,30 @@ class Args
                         }
                     }
                 }
+                $this->registerCommand($cmd, 'h', 'help', 'Show help for current command.');
             }
         }
         $this->parseOptions();
     }
     
-    public function registerCommand($command, $option = null, $longOption = null, $description = null, $required = false) {
+    public function registerCommand($command, $option = null, $longOption = null, $description = null) {
         if (!empty($command)) {
             isset($this->options[$command]) || $this->options[$command] = array();
             if (!empty($option)) {
                 $opt = substr(strval($option), 0, 1);
-                $this->options[$command][$opt] = array('opt' => '-' . $opt, 'longOpt' => null, 'description' => null, 'required' => false, 'value' => null);
+                $this->options[$command][$opt] = array('opt' => '-' . $opt, 'longOpt' => null, 'description' => null, 'value' => null);
                 empty($longOption) || $this->options[$command][$opt]['longOpt'] = '--' . strval($longOption);
                 empty($description) || $this->options[$command][$opt]['description'] = strval($description);
-                $this->options[$command][$opt]['required'] = (bool) $required;
             }
         }
+    }
+    
+    public function getCommand() {
+        return $this->command;
+    }
+    
+    public function getCommandList() {
+        return $this->options;
     }
     
     /**
@@ -80,7 +88,7 @@ class Args
      * @param string $option
      * @param int $pos
      */
-    public function has($option, $pos = null) {
+    public function hasOption($option, $pos = null) {
         if (null === $pos) {
             return (in_array('-' . $option, $this->arguments) || in_array('--' . $option, $this->arguments));
         } else {
@@ -94,14 +102,14 @@ class Args
      * @param string $option
      * @param array $default
      */
-    public function getOption($option = null, $default = array()) {
+    public function getOptions($option = null, $default = array()) {
         $val = $default;
         if (!empty($this->options[$this->command])) {
             if (null === $option) {
                 $val = $this->options[$this->command];
             } else {
                 foreach ($this->options[$this->command] as $opt => $optVal) {
-                    if ('-' . $option == $opt || '--' . $option == $optVal['longOpt']) {
+                    if ('-' . $option == $optVal['opt'] || '--' . $option == $optVal['longOpt']) {
                         $val = $optVal;
                         break;
                     }
@@ -118,7 +126,7 @@ class Args
      * @param mixed $default
      */
     public function getOptionValue($option, $default = null) {
-        return ($optVal = $this->getOption($option)) ? $optVal['value'] : $default;
+        return ($optVal = $this->getOptions($option)) ? $optVal['value'] : $default;
     }
     
     /**
@@ -127,7 +135,7 @@ class Args
      * @param string $option
      */
     public function isValidOption($option) {
-        return (false !== $this->getOption($option, false));
+        return (false !== $this->getOptions($option, false));
     }
     
     /**
@@ -137,7 +145,7 @@ class Args
      * @param int $pos
      */
     public function isOption($option, $pos = null) {
-        return ($this->isValidOption($option) && $this->has($option, $pos));
+        return ($this->isValidOption($option) && $this->hasOption($option, $pos));
     }
     
     protected function parseOptions() {

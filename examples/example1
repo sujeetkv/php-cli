@@ -2,19 +2,23 @@
 <?php
 require_once '../src/Cli.php';
 require_once '../src/StdIO.php';
+require_once '../src/Args.php';
+require_once '../src/TableLayout.php';
 require_once '../src/CliException.php';
 
 use SujeetKumar\PhpCli\Cli;
 
 $settings = array(
-    'options' => array(
-        /*  short  long    description           required
-            option option */
-        array('a', 'opta', 'demo description a', true),
-        array('b', 'optb', 'demo description b'),
-        array('c', 'optc', 'demo description c')
+    'commands' => array(
+        basename(__FILE__) => array(
+            /*  short  long    description
+                option option */
+            array('a', 'opta', 'demo description a'),
+            array('b', 'optb', 'demo description b'),
+            array('c', 'optc', 'demo description c')
+        )
     ),
-    'help_note' => 'This script is meant for demonstration.'
+    'helpNote' => 'This script is meant for demonstration. script is meant for demonstration. script is meant for demonstration. script is meant for demonstration. script is meant for demonstration. script is meant for demonstration. script is meant for demonstration. script is meant for demonstration. script is meant for demonstration.'
 );
 
 $cli = new Cli($settings);
@@ -35,6 +39,6 @@ function hello_c($cli) {
 
 $cli->bindOption('c', 'hello_c');
 
-if ($cli->isOption('c')) {
+if ($cli->args->isOption('c')) {
     hello_c($cli);
 }

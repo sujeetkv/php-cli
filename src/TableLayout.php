@@ -36,6 +36,7 @@ class TableLayout
     public function __construct(StdIO $stdio) {
         $this->stdio = $stdio;
         $this->maxWidth = $this->stdio->getWidth();
+        $this->columnWidths = $this->calculateColLengths(array('*'));
     }
 
     /**
@@ -92,7 +93,7 @@ class TableLayout
      *
      * @param array $columnAligns list of column alignments (left or right)
      */
-    public function setColAligns($columnAligns) {
+    public function setColAligns($columnAligns = array()) {
         $this->columnAligns = $columnAligns;
         return $this;
     }
@@ -113,7 +114,8 @@ class TableLayout
         $maxlen = 0;
 
         foreach ($columnWidths as $col => $width) {
-            $wrapped[$col] = explode(StdIO::LF, $this->wordwrap($texts[$col], $width, StdIO::LF, true));
+            //isset($texts[$col]) || $texts[$col] = '';
+            $wrapped[$col] = array_map('ltrim', explode(StdIO::LF, $this->wordwrap($texts[$col], $width, StdIO::LF, true)));
             $len = count($wrapped[$col]);
             if ($len > $maxlen) {
                 $maxlen = $len;
