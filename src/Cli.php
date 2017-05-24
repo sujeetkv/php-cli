@@ -46,7 +46,6 @@ class Cli
             if (isset($settings['helpNote'])) {
                 $this->setHelpNote($settings['helpNote']);
             }
-            var_dump($this->args->isOption('h'));
             if ($this->args->isOption('h') || $this->args->isOption('help')) {
                 $this->showHelp($this->args);
                 $this->stop();

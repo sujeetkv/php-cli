@@ -24,7 +24,7 @@ $settings = array(
 
 $cli = new Cli($settings);
 
-$cli->stdio->writeln('Hello Cli.');
+$cli->stdio->setAttr(array('bold'))->writeln('Hello Cli.');
 
 $cli->bindOption('a', function($cli, $val) {
     $cli->stdio->writeln('Hello ' . $val);

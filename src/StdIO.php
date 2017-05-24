@@ -28,6 +28,7 @@ class StdIO
     
     protected $foregroundColor = null;
     protected $backgroundColor = null;
+    protected $textAttribute = array();
     
     protected $foregroundColors = array(
         'black'         => '0;30',
@@ -57,6 +58,16 @@ class StdIO
         'magenta'       => '45',
         'cyan'          => '46',
         'light_gray'    => '47'
+    );
+    
+    protected $textAttributes = array(
+        'reset'         => '0',
+        'bold'          => '1',
+        'low_intensity' => '2',
+        'underline'     => '4',
+        'blink'         => '5',
+        'invert_color'  => '7',
+        'invisible'     => '8'
     );
     
     public function __construct() {
@@ -114,9 +125,10 @@ class StdIO
         if (is_array($text)) {
             $text = implode(self::EOL, $text);
         }
-        if ($this->foregroundColor || $this->backgroundColor) {
-            $text = $this->colorizeText($text, $this->foregroundColor, $this->backgroundColor);
+        if ($this->foregroundColor || $this->backgroundColor || $this->textAttribute) {
+            $text = $this->colorizeText($text, $this->foregroundColor, $this->backgroundColor, $this->textAttribute);
             $this->foregroundColor = $this->backgroundColor = null;
+            $this->textAttribute = array();
         }
         return fwrite($this->stdout, $text . str_repeat(self::EOL, $newlines));
     }
@@ -143,28 +155,47 @@ class StdIO
     }
     
     /**
+     * Set text attributes for next write operation
+     * 
+     * @param array $textAttributes
+     */
+    public function setAttr($textAttributes = array()) {
+        $this->textAttribute = $textAttributes;
+        return $this;
+    }
+    
+    /**
      * Get colored text
      * 
      * @param string $text
      * @param string $foregroundColor
      * @param string $backgroundColor
+     * @param string $attributes
      */
-    public function colorizeText($text = '', $foregroundColor = null, $backgroundColor = null) {
+    public function colorizeText($text = '', $foregroundColor = null, $backgroundColor = null, $attributes = array()) {
         $str = '';
-        $colored = false;
+        $attrChanged = false;
         if ($text !== '' && $this->hasColorSupport && $this->colorEnabled) {
             if (!empty($foregroundColor) && isset($this->foregroundColors[$foregroundColor])) {
                 $str .= "\033[" . $this->foregroundColors[$foregroundColor] . "m";
-                $colored = true;
+                $attrChanged = true;
             }
             if (!empty($backgroundColor) && isset($this->backgroundColors[$backgroundColor])) {
                 $str .= "\033[" . $this->backgroundColors[$backgroundColor] . "m";
-                $colored = true;
+                $attrChanged = true;
+            }
+            if (!empty($attributes) && is_array($attributes)) {
+                foreach ($attributes as $attr) {
+                    if (isset($this->textAttributes[$attr])) {
+                        $str .= "\033[" . $this->textAttributes[$attr] . "m";
+                        $attrChanged = true;
+                    }
+                }
             }
         }
         $str .= $text;
-        if ($colored) {
-            $str .= "\033[0m";
+        if ($attrChanged) {
+            $str .= "\033[" . $this->textAttributes['reset'] . "m";
         }
         return $str;
     }
@@ -197,6 +228,13 @@ class StdIO
      */
     public function getBackgroundColors() {
         return array_keys($this->backgroundColors);
+    }
+    
+    /**
+     * Get text attribute
+     */
+    public function getTextAttributes() {
+        return array_keys($this->textAttributes);
     }
     
     /**
