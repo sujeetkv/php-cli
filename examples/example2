@@ -2,29 +2,32 @@
 <?php
 require_once '../src/Cli.php';
 require_once '../src/StdIO.php';
+require_once '../src/Args.php';
+require_once '../src/Prompt.php';
+require_once '../src/TableLayout.php';
 require_once '../src/CliException.php';
 
 use SujeetKumar\PhpCli\Cli;
 
 $settings = array(
-	'help_note' => 'This script is meant for auth demonstration.'
+    'help_note' => 'This script is meant for auth demonstration.'
 );
 
 $cli = new Cli($settings);
 
-do{
-	$username = $cli->promptInput('Enter Username');
-	$password = $cli->promptInput('Enter Password', true);
-	$cli->stdio->ln();
-	if($username == 'admin' and $password == '123456'){
-		$logged_in = true;
-		$cli->stdio->setColor('green')->writeln('You are logged in.');
-	}else{
-		$logged_in = false;
-		$cli->stdio->setColor('red')->writeln('Invalid Username or Password. ');
-		$cli->stdio->ln();
-	}
-}while(! $logged_in);
+do {
+    $username = $cli->prompt->getInput('Enter Username');
+    $password = $cli->prompt->getInput('Enter Password', true);
+    $cli->stdio->ln();
+    if ($username == 'admin' and $password == '123456') {
+        $logged_in = true;
+        $cli->stdio->setColor('green')->writeln('You are logged in.');
+    } else {
+        $logged_in = false;
+        $cli->stdio->setColor('red')->writeln('Invalid Username or Password. ');
+        $cli->stdio->ln();
+    }
+} while (!$logged_in);
 
 $cli->stdio->ln();
 

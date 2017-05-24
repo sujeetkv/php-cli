@@ -24,7 +24,6 @@ class StdIO
     protected $hasColorSupport = false;
     protected $colorEnabled = true;
     protected $cliWidth = 75;
-    protected static $stty = null;
     
     protected $foregroundColor = null;
     protected $backgroundColor = null;
@@ -268,20 +267,12 @@ class StdIO
      */
     public function clear() {
         if (!self::isWindows()) {
-            passthru('clear');
+            shell_exec('clear');
         }
     }
     
     public static function isCli() {
         return (php_sapi_name() == 'cli' or defined('STDIN'));
-    }
-    
-    public static function hasStty() {
-        if (null !== self::$stty) {
-            return self::$stty;
-        }
-        exec('stty 2>&1', $output, $exitcode);
-        return (self::$stty = $exitcode === 0);
     }
     
     public static function isWindows() {

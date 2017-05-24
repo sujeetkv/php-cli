@@ -24,13 +24,12 @@ class Prompt
     /**
      * Get standard input from console
      * 
-     * @param string $prompt_message
+     * @param string $promptMessage
      * @param bool $secure
      */
-    public function getInput($prompt_message, $secure = false) {
+    public function getInput($promptMessage, $secure = false) {
         $input = null;
-        if (!empty($prompt_message)) {
-            $this->cli->stdio->write("$prompt_message: ");
+        if (!empty($promptMessage)) {
             if ($secure) {
                 if (StdIO::isWindows()) {
                     $exe = __DIR__ . '/bin/hiddeninput.exe';
@@ -40,26 +39,20 @@ class Prompt
                         copy($exe, $tmp_exe);
                         $exe = $tmp_exe;
                     }
+                    $this->cli->stdio->write("$promptMessage: ");
                     $input = rtrim(shell_exec($exe));
                     $this->cli->stdio->ln();
                     if (isset($tmp_exe)) {
                         unlink($tmp_exe);
                     }
-                } elseif (StdIO::hasStty()) {
-                    $stty_mode = shell_exec('stty -g');
-                    shell_exec('stty -echo');
-                    $input = trim($this->cli->stdio->read());
-                    shell_exec(sprintf('stty %s', $stty_mode));
-                    $this->cli->stdio->ln();
                 } elseif ($this->cli->stdio->hasColorSupport()) {
-                    $this->cli->stdio->write("\033[0;30m\033[40m");
-                    $input = trim($this->cli->stdio->read());
+                    $input = trim($this->cli->stdio->read("$promptMessage: \033[8m"));
                     $this->cli->stdio->write("\033[0m");
                 } else {
                     throw new CliException('Secure input not supported.');
                 }
             } else {
-                $input = trim($this->cli->stdio->read());
+                $input = trim($this->cli->stdio->read("$promptMessage: "));
             }
         }
         return $input;
