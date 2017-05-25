@@ -2,12 +2,15 @@
 <?php
 require_once '../src/Cli.php';
 require_once '../src/StdIO.php';
+require_once '../src/Args.php';
+require_once '../src/Prompt.php';
+require_once '../src/TableLayout.php';
 require_once '../src/CliException.php';
 
 use SujeetKumar\PhpCli\Cli;
 
 $settings = array(
-	'help_note' => 'This script is meant for show status demo.'
+    'helpNote' => 'This script is meant for show status demo.'
 );
 
 $cli = new Cli($settings);
@@ -18,15 +21,15 @@ $cli->stdio->ln();
 
 $cli->stdio->writeln('Progress Status Demo:');
 $cli->showStatus('Loading...');
-sleep(5);//do some stuff---
+sleep(5); //do some stuff---
 $cli->showStatus('Loaded!', true);
 
 $cli->stdio->ln();
 
 $cli->stdio->writeln('Progress Count Demo:');
-for($i = 1; $i <= 10; $i++){
-	sleep(1);//do some stuff---
-	$cli->showStatus('Step '.$i, ($i==10?true:false));
+for ($i = 1; $i <= 10; $i++) {
+    sleep(1); //do some stuff---
+    $cli->showStatus('Step ' . $i, ($i == 10 ? true : false));
 }
 
 $cli->stdio->ln();
@@ -34,10 +37,10 @@ $cli->stdio->ln();
 $cli->stdio->writeln('Progress Percent Demo:');
 $total = 20;
 $cli->showProgress($total, 0); // start
-for($i=1; $i<=$total; $i++){
-	sleep(1);//do some stuff---
-	$cli->showProgress($total, $i);
-	//----------------
+for ($i = 1; $i <= $total; $i++) {
+    sleep(1); //do some stuff---
+    $cli->showProgress($total, $i);
+    //----------------
 }
 
 $cli->stdio->ln();
@@ -45,10 +48,10 @@ $cli->stdio->ln();
 $cli->stdio->writeln('Progress Bar Demo:');
 $total = 20;
 $cli->showProgressBar($total, 0); // start
-for($i=1; $i<=$total; $i++){
-	sleep(1);//do some stuff---
-	$cli->showProgressBar($total, $i);
-	//----------------
+for ($i = 1; $i <= $total; $i++) {
+    sleep(1); //do some stuff---
+    $cli->showProgressBar($total, $i);
+    //----------------
 }
 
 $cli->stdio->ln();

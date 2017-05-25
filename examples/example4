@@ -2,22 +2,29 @@
 <?php
 require_once '../src/Cli.php';
 require_once '../src/StdIO.php';
+require_once '../src/Args.php';
+require_once '../src/Prompt.php';
+require_once '../src/TableLayout.php';
 require_once '../src/CliException.php';
 
 use SujeetKumar\PhpCli\Cli;
 
 $settings = array(
-    'options' => array(
-        array('a', 'opta', 'demo description a'),
-        array('b', 'optb', 'b to stop script')
+    'commands' => array(
+        basename(__FILE__) => array(
+            /*  short  long    description
+                option option */
+            array('a', 'opta', 'demo description a'),
+            array('b', 'optb', 'b to stop script')
+        )
     ),
-    'help_note' => 'This script is meant for demonstration.'
+    'helpNote' => 'This script is meant for demonstration.'
 );
 
 $cli = new Cli($settings);
 
-$cli->stdio->setColor('green')->writeln('Welcome Green');
-$cli->stdio->setColor('red')->writeln('Welcome Red');
+$cli->stdio->setColor('green')->setAttr(array('bold'))->writeln('Welcome Green');
+$cli->stdio->setColor('red')->setAttr(array('bold'))->writeln('Welcome Red');
 $cli->stdio->hr();
 
 if ($cli->isOption('b')) {

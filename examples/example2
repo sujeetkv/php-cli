@@ -10,7 +10,7 @@ require_once '../src/CliException.php';
 use SujeetKumar\PhpCli\Cli;
 
 $settings = array(
-    'help_note' => 'This script is meant for auth demonstration.'
+    'helpNote' => 'This script is meant for auth demonstration.'
 );
 
 $cli = new Cli($settings);
