@@ -44,6 +44,7 @@ class Args
             }
         }
         $this->parseOptions();
+        return $this;
     }
     
     public function registerCommand($command, $option = null, $longOption = null, $description = null) {
@@ -56,6 +57,7 @@ class Args
                 empty($description) || $this->options[$command][$opt]['description'] = strval($description);
             }
         }
+        return $this;
     }
     
     public function getCommand() {
@@ -153,7 +155,7 @@ class Args
     }
     
     protected function parseOptions() {
-        if (!empty($this->options) && !empty($this->arguments)) {
+        if (!empty($this->options) && !empty($this->arguments) && isset($this->options[$this->command])) {
             foreach ($this->options[$this->command] as $opt => $optInfo) {
                 if (($optKey = array_search($optInfo['opt'], $this->arguments)) !== false || ($optKey = array_search($optInfo['longOpt'], $this->arguments)) !== false) {
                     $optValKey = $optKey + 1;

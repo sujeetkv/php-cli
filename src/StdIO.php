@@ -250,6 +250,7 @@ class StdIO
      */
     public function ln($count = 1) {
         $this->write('', $count);
+        return $this;
     }
     
     /**
@@ -260,6 +261,7 @@ class StdIO
      */
     public function hr($size = 0, $char = '-') {
         $this->writeln(str_repeat($char, ($size ? $size : $this->cliWidth)));
+        return $this;
     }
     
     /**
@@ -269,6 +271,7 @@ class StdIO
         if (!self::isWindows()) {
             shell_exec('clear');
         }
+        return $this;
     }
     
     public static function isCli() {

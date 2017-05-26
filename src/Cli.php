@@ -38,21 +38,6 @@ class Cli
         $this->initialize($settings);
     }
     
-    public function initialize($settings) {
-        if (is_array($settings)) {
-            if (isset($settings['commands'])) {
-                $this->args->registerCommands($settings['commands']);
-            }
-            if (isset($settings['helpNote'])) {
-                $this->setHelpNote($settings['helpNote']);
-            }
-            if ($this->args->isOption('h') || $this->args->isOption('help')) {
-                $this->showHelp($this->args);
-                $this->stop();
-            }
-        }
-    }
-    
     /**
      * Bind function or method to registered option
      * 
@@ -81,6 +66,7 @@ class Cli
                 }
             }
         }
+        return $this;
     }
     
     /**
@@ -114,6 +100,7 @@ class Cli
             empty($helpNote) || $text[] = StdIO::EOL . $tableLayout->formatRow(array($helpNote));
         }
         $this->stdio->write($text, 2);
+        return $this;
     }
     
     /**
@@ -170,15 +157,6 @@ class Cli
     }
     
     /**
-     * Clear non-windows cli
-     */
-    public function clear() {
-        if (!StdIO::isWindows()) {
-            passthru('clear');
-        }
-    }
-    
-    /**
      * Stop cli
      */
     public function stop($status = 0) {
@@ -187,5 +165,21 @@ class Cli
     
     public function setHelpNote($helpNote) {
         empty($helpNote) || $this->helpNote = strval($helpNote);
+        return $this;
+    }
+    
+    protected function initialize($settings) {
+        if (is_array($settings)) {
+            if (isset($settings['commands'])) {
+                $this->args->registerCommands($settings['commands']);
+            }
+            if (isset($settings['helpNote'])) {
+                $this->setHelpNote($settings['helpNote']);
+            }
+            if ($this->args->isOption('h') || $this->args->isOption('help')) {
+                $this->showHelp($this->args);
+                $this->stop();
+            }
+        }
     }
 }

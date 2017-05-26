@@ -78,7 +78,8 @@ class Prompt
         $this->shellHistory = './.history_' . $shellName;
         
         $commands['list'] = array();
-            
+        $commands['exit'] = array();
+        
         $list = array_keys($commands);
         
         if ($this->cli->stdio->hasReadline()) {
@@ -105,9 +106,8 @@ EOF;
             
             $command = $this->cli->stdio->read($prompt . ' ');
             
-            if ($command === false or $command == 'exit') {
-                $this->cli->stdio->ln();
-                $this->cli->stdio->write('bye', 2);
+            if (false === $command) {
+                $this->cli->stdio->ln(2)->write('bye', 2);
                 break;
             }
             
@@ -122,11 +122,13 @@ EOF;
                 $args = array_map('trim', explode(' ', $command));
                 
                 $this->args = new Args(count($args), $args);
-                $this->args->registerCommands($commands);
                 
-                $cmd = $this->args->getCommand();
+                $cmd = $this->args->registerCommands($commands)->getCommand();
                 
-                if ($cmd == 'list') {
+                if ($cmd == 'exit') {
+                    $this->cli->stdio->ln()->write('bye', 2);
+                    break;
+                } elseif ($cmd == 'list') {
                     $this->cli->stdio->writeln('List of valid commands:');
                     $this->cli->stdio->write($list, 2);
                     continue;
