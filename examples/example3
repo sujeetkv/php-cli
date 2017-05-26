@@ -9,11 +9,13 @@ require_once '../src/CliException.php';
 
 use SujeetKumar\PhpCli\Cli;
 
-$settings = array(
-    'helpNote' => 'This script is meant for show status demo.'
+$commands = array(
+    basename(__FILE__) => array(
+        'helpNote' => 'This script is meant for show status demo.'
+    )
 );
 
-$cli = new Cli($settings);
+$cli = new Cli($commands);
 
 $cli->stdio->writeln('Welcome !');
 

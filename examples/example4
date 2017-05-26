@@ -9,42 +9,40 @@ require_once '../src/CliException.php';
 
 use SujeetKumar\PhpCli\Cli;
 
-$settings = array(
-    'commands' => array(
-        basename(__FILE__) => array(
-            /*  short  long    description
-                option option */
+$commands = array(
+    basename(__FILE__) => array(
+        'options' => array(
             array('a', 'opta', 'demo description a'),
             array('b', 'optb', 'b to stop script')
-        )
-    ),
-    'helpNote' => 'This script is meant for demonstration.'
+        ),
+        'helpNote' => 'This script is meant for demonstration.'
+    )
 );
 
-$cli = new Cli($settings);
+$cli = new Cli($commands);
 
 $cli->stdio->setColor('green')->setAttr(array('bold'))->writeln('Welcome Green');
 $cli->stdio->setColor('red')->setAttr(array('bold'))->writeln('Welcome Red');
 $cli->stdio->hr();
 
-if ($cli->isOption('b')) {
+if ($cli->args->isOption('b')) {
     $cli->stdio->writeln('Bye');
     $cli->stop();
 }
 
-var_dump($cli->isValidOption('a'));
+var_dump($cli->args->isValidOption('a'));
 
-var_dump($cli->hasArg('a'));
+var_dump($cli->args->hasOption('a'));
 
-var_dump($cli->isOption('a'));
+var_dump($cli->args->isOption('a'));
 
-print_r($cli->getArgs());
+print_r($cli->args->get());
 
-print_r($cli->getOptions('a'));
+print_r($cli->args->getOptions('a'));
 
-print_r($cli->getOptions());
+print_r($cli->args->getOptions());
 
-$cli->stdio->setColor('red')->writeln($cli->stdio->colorizeText($cli->getOptionValue('a')));
+$cli->stdio->setColor('red')->writeln($cli->stdio->colorizeText($cli->args->getOptionValue('a')));
 
 $cli->stdio->ln();
 

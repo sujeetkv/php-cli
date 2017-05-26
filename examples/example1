@@ -9,20 +9,20 @@ require_once '../src/CliException.php';
 
 use SujeetKumar\PhpCli\Cli;
 
-$settings = array(
-    'commands' => array(
-        basename(__FILE__) => array(
+$commands = array(
+    basename(__FILE__) => array(
+        'options' => array(
             /*  short  long    description
                 option option */
             array('a', 'opta', 'demo description a'),
             array('b', 'optb', 'demo description b'),
             array('c', 'optc', 'demo description c')
-        )
-    ),
-    'helpNote' => 'This script is meant for demonstration. script is meant for demonstration. script is meant for demonstration. script is meant for demonstration. script is meant for demonstration. script is meant for demonstration. script is meant for demonstration. script is meant for demonstration. script is meant for demonstration.'
+        ),
+        'helpNote' => 'This script is meant for demonstration. script is meant for demonstration. script is meant for demonstration. script is meant for demonstration. script is meant for demonstration. script is meant for demonstration. script is meant for demonstration. script is meant for demonstration. script is meant for demonstration.'
+    )
 );
 
-$cli = new Cli($settings);
+$cli = new Cli($commands);
 
 $cli->stdio->setAttr(array('bold'))->writeln('Hello Cli.');
 

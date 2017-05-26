@@ -9,21 +9,24 @@ require_once '../src/CliException.php';
 
 use SujeetKumar\PhpCli\Cli;
 
-$settings = array(
-    'helpNote' => 'This script is meant for demonstration.'
+$commands = array(
+    basename(__FILE__) => array()
 );
 
-$cli = new Cli($settings);
+$cli = new Cli($commands);
 
-$commands = array(
+$shellCommands = array(
     'hello' => array(
-        array('a', 'opta', 'opta desc'),
-        array('b', 'optb', 'optb desc')
+        'options' => array(
+            array('a', 'opta', 'demo description a'),
+            array('b', 'optb', 'demo description b')
+        ),
+        'helpNote' => 'This is hello command.'
     ),
     'world' => array()
 );
 
-$cli->prompt->createShell('DemoShell', $commands, function ($cli, $command, $options) {
+$cli->prompt->createShell('DemoShell', $shellCommands, function ($cli, $command, $options) {
     $cli->stdio->writeln($command);
     print_r($options);
 });

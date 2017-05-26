@@ -138,7 +138,7 @@ EOF;
                     continue;
                 } else {
                     if ($this->args->isOption('h') || $this->args->isOption('help')) {
-                        $this->cli->showHelp($this->args, false);
+                        $this->cli->showHelp($this->args);
                         continue;
                     }
                     

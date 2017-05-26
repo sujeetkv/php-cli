@@ -31,32 +31,23 @@ class Args
     
     public function registerCommands($commands) {
         if (!empty($commands) && is_array($commands)) {
-            foreach ($commands as $cmd => $cmdOptions) {
-                if (is_array($cmdOptions)) {
-                    foreach ($cmdOptions as $cmdOption) {
-                        if (is_array($cmdOption)) {
-                            array_unshift($cmdOption, $cmd);
-                            call_user_func_array(array($this, 'registerCommand'), $cmdOption);
+            foreach ($commands as $cmd => $cmdInfo) {
+                $this->options[$cmd] = array('options' => array(), 'helpNote' => null);
+                if (is_array($cmdInfo)) {
+                    if (isset($cmdInfo['options']) && is_array($cmdInfo['options'])) {
+                        foreach ($cmdInfo['options'] as $cmdOption) {
+                            if (is_array($cmdOption)) {
+                                array_unshift($cmdOption, $cmd);
+                                call_user_func_array(array($this, 'registerCommand'), $cmdOption);
+                            }
                         }
                     }
+                    isset($cmdInfo['helpNote']) && $this->options[$cmd]['helpNote'] = $cmdInfo['helpNote'];
                 }
                 $this->registerCommand($cmd, 'h', 'help', 'Show help for current command.');
             }
         }
         $this->parseOptions();
-        return $this;
-    }
-    
-    public function registerCommand($command, $option = null, $longOption = null, $description = null) {
-        if (!empty($command)) {
-            isset($this->options[$command]) || $this->options[$command] = array();
-            if (!empty($option)) {
-                $opt = substr(strval($option), 0, 1);
-                $this->options[$command][$opt] = array('opt' => '-' . $opt, 'longOpt' => null, 'description' => null, 'value' => null);
-                empty($longOption) || $this->options[$command][$opt]['longOpt'] = '--' . strval($longOption);
-                empty($description) || $this->options[$command][$opt]['description'] = strval($description);
-            }
-        }
         return $this;
     }
     
@@ -110,11 +101,11 @@ class Args
      */
     public function getOptions($option = null, $default = array()) {
         $val = $default;
-        if (!empty($this->options[$this->command])) {
+        if (!empty($this->options[$this->command]['options'])) {
             if (null === $option) {
-                $val = $this->options[$this->command];
+                $val = $this->options[$this->command]['options'];
             } else {
-                foreach ($this->options[$this->command] as $opt => $optVal) {
+                foreach ($this->options[$this->command]['options'] as $opt => $optVal) {
                     if ('-' . $option == $optVal['opt'] || '--' . $option == $optVal['longOpt']) {
                         $val = $optVal;
                         break;
@@ -123,6 +114,10 @@ class Args
             }
         }
         return $val;
+    }
+    
+    public function getHelpNote() {
+        return isset($this->options[$this->command]['helpNote']) ? $this->options[$this->command]['helpNote'] : null;
     }
     
     /**
@@ -154,13 +149,22 @@ class Args
         return ($this->isValidOption($option) && $this->hasOption($option, $pos));
     }
     
+    protected function registerCommand($command, $option = null, $longOption = null, $description = null) {
+        if (!empty($command) && !empty($option)) {
+            $opt = substr(strval($option), 0, 1);
+            $this->options[$command]['options'][$opt] = array('opt' => '-' . $opt, 'longOpt' => null, 'description' => null, 'value' => null);
+            empty($longOption) || $this->options[$command]['options'][$opt]['longOpt'] = '--' . strval($longOption);
+            empty($description) || $this->options[$command]['options'][$opt]['description'] = strval($description);
+        }
+    }
+    
     protected function parseOptions() {
-        if (!empty($this->options) && !empty($this->arguments) && isset($this->options[$this->command])) {
-            foreach ($this->options[$this->command] as $opt => $optInfo) {
+        if (!empty($this->options) && !empty($this->arguments) && isset($this->options[$this->command]['options']) && is_array($this->options[$this->command]['options'])) {
+            foreach ($this->options[$this->command]['options'] as $opt => $optInfo) {
                 if (($optKey = array_search($optInfo['opt'], $this->arguments)) !== false || ($optKey = array_search($optInfo['longOpt'], $this->arguments)) !== false) {
                     $optValKey = $optKey + 1;
                     if (isset($this->arguments[$optValKey]) && !preg_match('/^(-|--)/', $this->arguments[$optValKey])) {
-                        $this->options[$this->command][$opt]['value'] = $this->arguments[$optValKey];
+                        $this->options[$this->command]['options'][$opt]['value'] = $this->arguments[$optValKey];
                     }
                 }
             }

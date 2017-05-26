@@ -23,7 +23,7 @@ class Cli
      * 
      * @param array $settings
      */
-    public function __construct($settings = array()) {
+    public function __construct($commands = array()) {
         if (!StdIO::isCli()) {
             throw new CliException('"This program is only meant for Command Line Interface.');
         }
@@ -35,7 +35,7 @@ class Cli
         $this->args = new Args();
         $this->prompt = new Prompt($this);
         
-        $this->initialize($settings);
+        $this->initialize($commands);
     }
     
     /**
@@ -73,7 +73,7 @@ class Cli
      * Print Help Content
      * 
      * @param Args $args
-     * @param mixed $helpNote
+     * @param string $helpNote
      */
     public function showHelp($args, $helpNote = null) {
         $hw = $this->stdio->getWidth();
@@ -95,10 +95,10 @@ class Cli
             }
             $tableLayout->setColWidths(array('*'));
         }
-        if (false !== $helpNote) {
-            empty($helpNote) && $helpNote = $this->helpNote;
-            empty($helpNote) || $text[] = StdIO::EOL . $tableLayout->formatRow(array($helpNote));
-        }
+        
+        empty($helpNote) && $helpNote = $args->getHelpNote();
+        empty($helpNote) || $text[] = StdIO::EOL . $tableLayout->formatRow(array($helpNote));
+        
         $this->stdio->write($text, 2);
         return $this;
     }
@@ -168,14 +168,9 @@ class Cli
         return $this;
     }
     
-    protected function initialize($settings) {
-        if (is_array($settings)) {
-            if (isset($settings['commands'])) {
-                $this->args->registerCommands($settings['commands']);
-            }
-            if (isset($settings['helpNote'])) {
-                $this->setHelpNote($settings['helpNote']);
-            }
+    protected function initialize($commands) {
+        if (is_array($commands)) {
+            $this->args->registerCommands($commands);
             if ($this->args->isOption('h') || $this->args->isOption('help')) {
                 $this->showHelp($this->args);
                 $this->stop();

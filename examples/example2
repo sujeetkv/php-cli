@@ -9,11 +9,13 @@ require_once '../src/CliException.php';
 
 use SujeetKumar\PhpCli\Cli;
 
-$settings = array(
-    'helpNote' => 'This script is meant for auth demonstration.'
+$commands = array(
+    basename(__FILE__) => array(
+        'helpNote' => 'This script is meant for auth demonstration.'
+    )
 );
 
-$cli = new Cli($settings);
+$cli = new Cli($commands);
 
 do {
     $username = $cli->prompt->getInput('Enter Username');
