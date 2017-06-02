@@ -75,6 +75,17 @@ class Args
         }
     }
     
+    public function getOpt() {
+        $opts = array();
+        $options = $this->getOptions();
+        foreach ($options as $opt => $option) {
+            if ($this->isOption(substr($option['opt'], 1)) || $this->isOption(substr($option['longOpt'], 2))) {
+                $opts[$opt] = $option['value'];
+            }
+        }
+        return $opts;
+    }
+    
     /**
      * Check if argument passed
      * 
@@ -87,10 +98,6 @@ class Args
         } else {
             return (isset($this->arguments[$pos]) && ($this->arguments[$pos] == '-' . $option || $this->arguments[$pos] == '--' . $option));
         }
-    }
-    
-    public function getOption($option = null, $default = null) {
-        
     }
     
     /**

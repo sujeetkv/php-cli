@@ -80,12 +80,10 @@ class Prompt
         $commands['list'] = array();
         $commands['exit'] = array();
         
-        $list = array_keys($commands);
-        
         if ($this->cli->stdio->hasReadline()) {
             readline_read_history($this->shellHistory);
-            readline_completion_function(function () use ($list) {
-                return $list;
+            readline_completion_function(function () use ($commands) {
+                return $this->shellAutoCompleter($commands);
             });
         }
         
@@ -125,6 +123,8 @@ EOF;
                 
                 $cmd = $this->args->registerCommands($commands)->getCommand();
                 
+                $list = array_keys($this->args->getCommandList());
+                
                 if ($cmd == 'exit') {
                     $this->cli->stdio->ln()->write('bye', 2);
                     break;
@@ -142,10 +142,33 @@ EOF;
                         continue;
                     }
                     
-                    $res = call_user_func($shellHandler, $this->cli, $cmd, $this->args->getOptions());
+                    $res = call_user_func($shellHandler, $this->cli, $cmd, $this->args->getOpt());
                 }
             }
             
         } while ($res !== false);
+    }
+    
+    private function shellAutoCompleter($rawCommands) {
+        $info = readline_info();
+        $text = substr($info['line_buffer'], 0, $info['end']);
+
+        if ($info['point'] !== $info['end']) {
+            return true;
+        }
+
+        if (!$text || false === strpos($text, ' ')) {
+            return array_keys($rawCommands);
+        }
+
+        $text = trim(substr($text, 0, strpos($text, ' ')));
+
+        $list = array('--help');
+        if (isset($rawCommands[$text]['options']) && is_array($rawCommands[$text]['options'])) {
+            foreach ($rawCommands[$text]['options'] as $option) {
+                isset($option[1]) && $list[] = '--' . $option[1];
+            }
+        }
+        return $list;
     }
 }
