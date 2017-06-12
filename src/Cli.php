@@ -8,6 +8,8 @@
 
 namespace SujeetKumar\PhpCli;
 
+use SujeetKumar\PhpCli\Helper\TableLayout;
+
 /**
  * Cli class
  */

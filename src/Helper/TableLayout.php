@@ -6,7 +6,9 @@
  * @link    https://github.com/sujeet-kumar/php-cli
  */
 
-namespace SujeetKumar\PhpCli;
+namespace SujeetKumar\PhpCli\Helper;
+
+use SujeetKumar\PhpCli\StdIO;
 
 /**
  * TableLayout class
