@@ -9,6 +9,7 @@
 namespace SujeetKumar\PhpCli\Helper;
 
 use SujeetKumar\PhpCli\StdIO;
+use SujeetKumar\PhpCli\CliException;
 
 /**
  * TableLayout class
