@@ -24,6 +24,7 @@ class StdIO
     protected $hasColorSupport = false;
     protected $colorEnabled = true;
     protected $cliWidth = 75;
+    protected $cliHeight = 50;
     
     protected $foregroundColor = null;
     protected $backgroundColor = null;
@@ -95,6 +96,11 @@ class StdIO
         $width = (int) (isset($_SERVER['COLUMNS']) ? $_SERVER['COLUMNS'] : @exec('tput cols'));
         if ($width) {
             $this->cliWidth = $width;
+        }
+        
+        $height = (int) (isset($_SERVER['ROWS']) ? $_SERVER['ROWS'] : @exec('tput lines'));
+        if ($height) {
+            $this->cliHeight = $height;
         }
     }
     
@@ -237,10 +243,17 @@ class StdIO
     }
     
     /**
-     * Get cli width
+     * Get cli width in char count
      */
     public function getWidth() {
         return $this->cliWidth;
+    }
+    
+    /**
+     * Get cli height in char count
+     */
+    public function getHeight() {
+        return $this->cliHeight;
     }
     
     /**
