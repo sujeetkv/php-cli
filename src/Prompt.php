@@ -65,8 +65,9 @@ class Prompt
      * @param array $commands
      * @param callable $shellHandler
      * @param string $prompt
+     * @param bool $showBanner
      */
-    public function createShell($shellName, $commands, $shellHandler, $prompt = '>') {
+    public function createShell($shellName, $commands, $shellHandler, $prompt = '>', $showBanner = true) {
         if (empty($commands) || !is_array($commands)) {
             throw new CliException('Invalid variable commands provided.');
         }
@@ -98,7 +99,14 @@ To exit the shell, type ^D or exit.
 
 EOF;
         
-        $this->cli->stdio->writeln($header);
+        if ($showBanner) {
+            $banner = <<<EOF
+{$this->cli->createFiglet($shellName)}
+EOF;
+            $this->cli->stdio->writeln($banner . $header);
+        } else {
+            $this->cli->stdio->writeln($header);
+        }
         
         do {
             

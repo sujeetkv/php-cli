@@ -71,6 +71,32 @@ class Figlet
      */
     public $font_comment;
 
+    /**
+     * Is used for keeping config
+     *
+     * @var array
+     * @access protected
+     */
+    protected $config;
+
+
+    /**
+     * Initialize Figlet class
+     * 
+     * @access public
+     */
+    public function __construct() {
+        $config_file = __DIR__ . '/Figlet/config.php';
+        file_exists($config_file) && $this->config = require $config_file;
+        
+        if (isset($this->config['font_file'])) {
+            $this->loadFont(
+                $this->config['font_file'],
+                (isset($this->config['load_german']) && $this->config['load_german'])
+            );
+        }
+    }
+
 
     /**
      * Load user font. Must be invoked first.
@@ -233,7 +259,7 @@ class Figlet
 
 
     /**
-    * Print string using font loaded by LoadFont method
+    * Create string using font loaded by LoadFont method
     *
     * @param string $str    string for printing
     * @param bool   $inhtml (optional) output mode
@@ -242,7 +268,7 @@ class Figlet
     * @access public
     * @return string contains
     */
-    public function lineEcho($str, $inhtml = false) {
+    public function render($str, $inhtml = false) {
         $out = array();
 
         for ($i = 0; $i<strlen($str); $i++) {

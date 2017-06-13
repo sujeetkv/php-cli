@@ -9,6 +9,7 @@
 namespace SujeetKumar\PhpCli;
 
 use SujeetKumar\PhpCli\Helper\TableLayout;
+use SujeetKumar\PhpCli\Helper\Figlet;
 
 /**
  * Cli class
@@ -18,6 +19,7 @@ class Cli
     public $stdio;
     public $args;
     public $prompt;
+    public $figlet;
     protected $helpNote = '';
     
     /**
@@ -149,6 +151,18 @@ class Cli
             $b = '|' . $this->stdio->colorizeText(str_repeat('#', $blen), 'green', 'green') . str_repeat('_', (50 - $blen)) . '|';
             $this->stdio->write('  ' . $p . '% ' . StdIO::TAB . $b . (($p == 100) ? StdIO::EOL : StdIO::CR));
         }
+    }
+    
+    /**
+     * Get figlet of text
+     * 
+     * @param string $text
+     * @param string $fontFile
+     */
+    public function createFiglet($text, $fontFile = null, $loadGerman = true) {
+        $this->figlet || $this->figlet = new Figlet();
+        $fontFile && $this->figlet->loadFont($fontFile, $loadGerman);
+        return $this->figlet->render($text);
     }
     
     /**
