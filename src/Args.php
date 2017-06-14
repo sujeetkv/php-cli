@@ -77,9 +77,9 @@ class Args
     
     public function getOpt() {
         $opts = array();
-        $options = $this->getOptions();
+        $options = $this->getOption();
         foreach ($options as $opt => $option) {
-            if ($this->isOption(substr($option['opt'], 1)) || $this->isOption(substr($option['longOpt'], 2))) {
+            if ($this->hasOption($opt)) {
                 $opts[$opt] = $option['value'];
             }
         }
@@ -87,16 +87,21 @@ class Args
     }
     
     /**
-     * Check if argument passed
+     * Check if argument passed and registerd
      * 
      * @param string $option
      * @param int $pos
      */
     public function hasOption($option, $pos = null) {
-        if (null === $pos) {
-            return (in_array('-' . $option, $this->arguments) || in_array('--' . $option, $this->arguments));
+        if ($opt = $this->getOption($option)) {
+            if (null === $pos) {
+                return (in_array($opt['opt'], $this->arguments) || in_array($opt['longOpt'], $this->arguments));
+            } else {
+                return (isset($this->arguments[$pos]) 
+                        && ($this->arguments[$pos] == $opt['opt'] || $this->arguments[$pos] == $opt['longOpt']));
+            }
         } else {
-            return (isset($this->arguments[$pos]) && ($this->arguments[$pos] == '-' . $option || $this->arguments[$pos] == '--' . $option));
+            return false;
         }
     }
     
@@ -106,18 +111,13 @@ class Args
      * @param string $option
      * @param array $default
      */
-    public function getOptions($option = null, $default = array()) {
+    public function getOption($option = null, $default = array()) {
         $val = $default;
         if (!empty($this->options[$this->command]['options'])) {
             if (null === $option) {
                 $val = $this->options[$this->command]['options'];
-            } else {
-                foreach ($this->options[$this->command]['options'] as $opt => $optVal) {
-                    if ('-' . $option == $optVal['opt'] || '--' . $option == $optVal['longOpt']) {
-                        $val = $optVal;
-                        break;
-                    }
-                }
+            } elseif (isset($this->options[$this->command]['options'][$option])) {
+                $val = $this->options[$this->command]['options'][$option];
             }
         }
         return $val;
@@ -134,7 +134,7 @@ class Args
      * @param mixed $default
      */
     public function getOptionValue($option, $default = null) {
-        return ($optVal = $this->getOptions($option)) ? $optVal['value'] : $default;
+        return ($optVal = $this->getOption($option)) ? $optVal['value'] : $default;
     }
     
     /**
@@ -143,17 +143,7 @@ class Args
      * @param string $option
      */
     public function isValidOption($option) {
-        return (false !== $this->getOptions($option, false));
-    }
-    
-    /**
-     * Check if option is registered and passed as argument
-     * 
-     * @param string $option
-     * @param int $pos
-     */
-    public function isOption($option, $pos = null) {
-        return ($this->isValidOption($option) && $this->hasOption($option, $pos));
+        return (false !== $this->getOption($option, false));
     }
     
     protected function registerCommand($command, $option = null, $longOption = null, $description = null) {

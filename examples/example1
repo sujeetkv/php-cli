@@ -41,6 +41,6 @@ function hello_c($cli) {
 
 $cli->bindOption('c', 'hello_c');
 
-if ($cli->args->isOption('c')) {
+if ($cli->args->hasOption('c')) {
     hello_c($cli);
 }

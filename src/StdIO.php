@@ -19,6 +19,7 @@ class StdIO
     const EOL = PHP_EOL;
     
     protected $stdout = null;
+    protected $stderr = null;
     protected $stdin = null;
     protected $hasReadline = false;
     protected $hasColorSupport = false;
@@ -72,6 +73,7 @@ class StdIO
     
     public function __construct() {
         $this->stdout = @fopen('php://stdout', 'w');
+        $this->stderr = @fopen('php://stderr', 'w');
         $this->stdin = @fopen('php://stdin', 'r');
         
         if (!$this->stdout) {
@@ -125,8 +127,9 @@ class StdIO
      * 
      * @param mixed $text
      * @param int $newlines
+     * @param bool $toError
      */
-    public function write($text, $newlines = 0) {
+    public function write($text, $newlines = 0, $toError = false) {
         if (is_array($text)) {
             $text = implode(self::EOL, $text);
         }
@@ -135,16 +138,17 @@ class StdIO
             $this->foregroundColor = $this->backgroundColor = null;
             $this->textAttribute = array();
         }
-        return fwrite($this->stdout, $text . str_repeat(self::EOL, $newlines));
+        return fwrite((($toError && $this->stderr) ? $this->stderr : $this->stdout), $text . str_repeat(self::EOL, $newlines));
     }
     
     /**
      * Write text to console and add a new line at end
      * 
      * @param mixed $text
+     * @param bool $toError
      */
-    public function writeln($text) {
-        return $this->write($text, 1);
+    public function writeln($text, $toError = false) {
+        return $this->write($text, 1, $toError);
     }
     
     /**
@@ -301,6 +305,9 @@ class StdIO
         }
         if (is_resource($this->stdin)) {
             fclose($this->stdin);
+        }
+        if (is_resource($this->stderr)) {
+            fclose($this->stderr);
         }
     }
 }

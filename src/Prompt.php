@@ -145,7 +145,7 @@ EOF;
                     $this->cli->stdio->write($list, 2);
                     continue;
                 } else {
-                    if ($this->args->isOption('h') || $this->args->isOption('help')) {
+                    if ($this->args->hasOption('h')) {
                         $this->cli->showHelp($this->args);
                         continue;
                     }

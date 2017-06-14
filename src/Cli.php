@@ -50,24 +50,18 @@ class Cli
      * @param array $params
      */
     public function bindOption($option, $callback, $params = array()) {
-        if ($option = $this->args->getOptions($option)) {
-            $opt = substr($option['opt'], 1);
-            $longOpt = substr($option['longOpt'], 2);
-            if (!is_array($params)) {
-                throw new CliException('Invalid argument "params" to ' . __METHOD__ . ' for option "' . $opt . '"');
-            }
+        if ($this->args->hasOption($option)) {
+            $opt = $this->args->getOption($option);
             if (!empty($params)) {
                 array_unshift($params, $this);
                 $_params = $params;
             } else {
-                $_params = array($this, $option['value']);
+                $_params = array($this, $opt['value']);
             }
-            if ($this->args->isOption($opt) || $this->args->isOption($longOpt)) {
-                if (!is_callable($callback, false, $callbackName)) {
-                    throw new CliException('Invalid callback ' . $callbackName . ' to ' . __METHOD__ . ' for option "' . $opt . '"');
-                } else {
-                    call_user_func_array($callback, $_params);
-                }
+            if (!is_callable($callback, false, $callbackName)) {
+                throw new CliException('Invalid callback ' . $callbackName . ' to ' . __METHOD__ . ' for option "' . $option . '"');
+            } else {
+                call_user_func_array($callback, $_params);
             }
         }
         return $this;
@@ -83,7 +77,7 @@ class Cli
         $hw = $this->stdio->getWidth();
         $text = array();
         $tableLayout = new TableLayout($this->stdio);
-        $options = $args->getOptions();
+        $options = $args->getOption();
         if (empty($options)) {
             $text[] = $tableLayout->formatRow(array('Usage: ' . $args->getCommand()));
         } else {
@@ -189,7 +183,7 @@ class Cli
     protected function initialize($commands) {
         if (is_array($commands)) {
             $this->args->registerCommands($commands);
-            if ($this->args->isOption('h') || $this->args->isOption('help')) {
+            if ($this->args->hasOption('h')) {
                 $this->showHelp($this->args);
                 $this->stop();
             }

@@ -26,7 +26,7 @@ $cli->stdio->setColor('green')->setAttr(array('bold'))->writeln('Welcome Green')
 $cli->stdio->setColor('red')->setAttr(array('bold'))->writeln('Welcome Red');
 $cli->stdio->hr();
 
-if ($cli->args->isOption('b')) {
+if ($cli->args->hasOption('b')) {
     $cli->stdio->writeln('Bye');
     $cli->stop();
 }
@@ -35,13 +35,13 @@ var_dump($cli->args->isValidOption('a'));
 
 var_dump($cli->args->hasOption('a'));
 
-var_dump($cli->args->isOption('a'));
+var_dump($cli->args->hasOption('a'));
 
 print_r($cli->args->get());
 
-print_r($cli->args->getOptions('a'));
+print_r($cli->args->getOption('a'));
 
-print_r($cli->args->getOptions());
+print_r($cli->args->getOption());
 
 $cli->stdio->setColor('red')->writeln($cli->stdio->colorizeText($cli->args->getOptionValue('a')));
 
