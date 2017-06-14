@@ -183,6 +183,11 @@ class Cli
         exit($status);
     }
     
+    /**
+     * Set help note
+     * 
+     * @param string $helpNote
+     */
     public function setHelpNote($helpNote) {
         empty($helpNote) || $this->helpNote = strval($helpNote);
         return $this;
