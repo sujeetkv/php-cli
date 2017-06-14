@@ -170,6 +170,8 @@ class Cli
     
     /**
      * Stop cli
+     * 
+     * @param int $status exit code
      */
     public function stop($status = 0) {
         exit($status);

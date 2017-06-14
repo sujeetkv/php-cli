@@ -155,6 +155,8 @@ EOF;
             }
             
         } while ($res !== false);
+        
+        $this->cli->stop();
     }
     
     private function shellAutoCompleter($rawCommands) {
