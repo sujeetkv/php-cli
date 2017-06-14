@@ -19,7 +19,7 @@ $commands = array(
             array('b', 'optb', 'demo description b'),
             array('c', 'optc', 'demo description c')
         ),
-        'helpNote' => 'This script is meant for demonstration. script is meant for demonstration. script is meant for demonstration. script is meant for demonstration. script is meant for demonstration. script is meant for demonstration. script is meant for demonstration. script is meant for demonstration. script is meant for demonstration.'
+        'helpNote' => 'This script is meant for demonstration. This script is meant for demonstration. This script is meant for demonstration. This script is meant for demonstration. This script is meant for demonstration. This script is meant for demonstration. This script is meant for demonstration. This script is meant for demonstration. This script is meant for demonstration.'
     )
 );
 

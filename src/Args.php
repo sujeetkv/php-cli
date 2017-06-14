@@ -123,10 +123,6 @@ class Args
         return $val;
     }
     
-    public function getHelpNote() {
-        return isset($this->options[$this->command]['helpNote']) ? $this->options[$this->command]['helpNote'] : null;
-    }
-    
     /**
      * Get registered option value
      * 
@@ -144,6 +140,10 @@ class Args
      */
     public function isValidOption($option) {
         return (false !== $this->getOption($option, false));
+    }
+    
+    public function getHelpNote() {
+        return isset($this->options[$this->command]['helpNote']) ? $this->options[$this->command]['helpNote'] : null;
     }
     
     protected function registerCommand($command, $option = null, $longOption = null, $description = null) {

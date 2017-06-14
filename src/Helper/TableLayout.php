@@ -106,7 +106,7 @@ class TableLayout
      *
      * @param array $texts list of texts for each column
      * @param array $colors A list of color names to use for each column. use empty string for default
-     * @param array $columnWidths list of column widths (in characters, percent or '*')
+     * @param array $columnWidths list of column widths (in characters, percentage or '*')
      * @param array $columnAligns list of column alignments (left or right)
      */
     public function formatRow($texts, $colors = array(), $columnWidths = array(), $columnAligns = array()) {
@@ -115,7 +115,7 @@ class TableLayout
         
         $wrapped = array();
         $maxlen = 0;
-
+        
         foreach ($columnWidths as $col => $width) {
             //isset($texts[$col]) || $texts[$col] = '';
             $wrapped[$col] = array_map('ltrim', explode(StdIO::LF, $this->wordwrap($texts[$col], $width, StdIO::LF, true)));
@@ -124,10 +124,11 @@ class TableLayout
                 $maxlen = $len;
             }
         }
-
+        
         $last = count($columnWidths) - 1;
         $out = array();
         for ($i = 0; $i < $maxlen; $i++) {
+            $chunks = array();
             foreach ($columnWidths as $col => $width) {
                 $val = isset($wrapped[$col][$i]) ? $wrapped[$col][$i] : '';
                 $align = (isset($columnAligns[$col]) && $columnAligns[$col] == 'right') ? '' : '-';
@@ -135,11 +136,12 @@ class TableLayout
                 if (isset($colors[$col]) && $colors[$col]) {
                     $chunk = $this->stdio->colorizeText($chunk, $colors[$col]);
                 }
-                $out[] = $chunk;
+                $chunks[] = $chunk;
             }
+            $out[] = implode($this->separator, $chunks);
         }
         
-        return implode($this->separator, $out);
+        return implode(StdIO::LF, $out);
     }
 
     /**

@@ -74,15 +74,19 @@ class Cli
      * @param string $helpNote
      */
     public function showHelp($args, $helpNote = null) {
-        $hw = $this->stdio->getWidth();
         $text = array();
         $tableLayout = new TableLayout($this->stdio);
+        $tableLayout->setMaxWidth(min(75, $this->stdio->getWidth()));
         $options = $args->getOption();
+        $text[] = $tableLayout->formatRow(array('Usage:'));
+        $optHeading = $tableLayout->formatRow(array('Available options are:'));
+        
+        $tableLayout->setColWidths(array('5%', '*'));
         if (empty($options)) {
-            $text[] = $tableLayout->formatRow(array('Usage: ' . $args->getCommand()));
+            $text[] = $tableLayout->formatRow(array('', $args->getCommand()));
         } else {
-            $text[] = $tableLayout->formatRow(array('Usage: ' . $args->getCommand() . ' [OPTION] [VALUE] ...')) . StdIO::EOL;
-            $text[] = $tableLayout->formatRow(array('Available options are:'));
+            $text[] = $tableLayout->formatRow(array('', $args->getCommand() . ' [OPTION] [VALUE] ...')) . StdIO::EOL;
+            $text[] = $optHeading;
             $tableLayout->setColWidths(array('5%', '20%', '*'));
             foreach ($options as $opt) {
                 $text[] = $tableLayout->formatRow(array(
@@ -91,11 +95,13 @@ class Cli
                     $opt['description']
                 ));
             }
-            $tableLayout->setColWidths(array('*'));
         }
         
         empty($helpNote) && $helpNote = $args->getHelpNote();
-        empty($helpNote) || $text[] = StdIO::EOL . $tableLayout->formatRow(array($helpNote));
+        if (!empty($helpNote)) {
+            $tableLayout->setColWidths(array('*'));
+            $text[] = StdIO::EOL . $tableLayout->formatRow(array($helpNote));
+        }
         
         $this->stdio->write($text, 2);
         return $this;
