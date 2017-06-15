@@ -27,6 +27,9 @@ class TableLayout
     
     /** @var array default column alignments */
     protected $columnAligns = array();
+    
+    /** @var array default column attributes */
+    protected $columnAttrs = array();
 
     /** @var StdIO class object */
     protected $stdio;
@@ -92,6 +95,13 @@ class TableLayout
     }
     
     /**
+     * Get calculated column widths
+     */
+    public function getColWidths() {
+        return $this->columnWidths;
+    }
+    
+    /**
      * Set default alignment of columns
      *
      * @param array $columnAligns list of column alignments (left or right)
@@ -102,16 +112,28 @@ class TableLayout
     }
     
     /**
+     * Set default attributes of columns
+     *
+     * @param array $columnAttrs list of column attributes (bold, underline, etc.)
+     */
+    public function setColAttrs($columnAttrs = array()) {
+        $this->columnAttrs = $columnAttrs;
+        return $this;
+    }
+    
+    /**
      * Displays text in multiple word wrapped columns
      *
      * @param array $texts list of texts for each column
      * @param array $colors A list of color names to use for each column. use empty string for default
      * @param array $columnWidths list of column widths (in characters, percentage or '*')
      * @param array $columnAligns list of column alignments (left or right)
+     * @param array $columnAttrs list of column attributes (bold, underline, etc.)
      */
-    public function formatRow($texts, $colors = array(), $columnWidths = array(), $columnAligns = array()) {
+    public function formatRow($texts, $colors = array(), $columnWidths = array(), $columnAligns = array(), $columnAttrs = array()) {
         $columnWidths = empty($columnWidths) ? $this->columnWidths : $this->calculateColLengths($columnWidths);
         empty($columnAligns) && $columnAligns = $this->columnAligns;
+        empty($columnAttrs) && $columnAttrs = $this->columnAttrs;
         
         $wrapped = array();
         $maxlen = 0;
@@ -133,9 +155,13 @@ class TableLayout
                 $val = isset($wrapped[$col][$i]) ? $wrapped[$col][$i] : '';
                 $align = (isset($columnAligns[$col]) && $columnAligns[$col] == 'right') ? '' : '-';
                 $chunk = sprintf('%' . $align . $width . 's', $val);
-                if (isset($colors[$col]) && $colors[$col]) {
-                    $chunk = $this->stdio->colorizeText($chunk, $colors[$col]);
+                
+                $textColor = (isset($colors[$col]) && $colors[$col]) ? $colors[$col] : null;
+                $textAttr = (isset($columnAttrs[$col]) && is_array($columnAttrs[$col])) ? $columnAttrs[$col] : array();
+                if ($textColor || $textAttr) {
+                    $chunk = $this->stdio->colorizeText($chunk, $textColor, null, $textAttr);
                 }
+                
                 $chunks[] = $chunk;
             }
             $out[] = (empty($this->separator) || $this->separator == ' ') 

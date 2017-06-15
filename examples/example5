@@ -5,6 +5,7 @@ require_once '../src/StdIO.php';
 require_once '../src/Args.php';
 require_once '../src/Prompt.php';
 require_once '../src/Helper/TableLayout.php';
+require_once '../src/Helper/Table.php';
 require_once '../src/Helper/Figlet.php';
 require_once '../src/CliException.php';
 
@@ -24,10 +25,32 @@ $shellCommands = array(
         ),
         'helpNote' => 'This is hello command.'
     ),
+    'table' => array(
+        'helpNote' => 'This is table demo.'
+    ),
     'world' => array()
 );
 
 $cli->prompt->createShell('DemoShell', $shellCommands, function ($cli, $command, $options) {
-    $cli->stdio->writeln($command);
+    $cli->stdio->writeln('cmd:' . $command);
+    $cli->stdio->write('opt:');
     print_r($options);
+    $cli->stdio->ln();
+    
+    if ($command == 'table') {
+        $table = $cli->getTable()->setWidth(50);
+        $table->setHeader(
+            array('N.', 'Name', 'Age'),
+            array('10%', '*', '20%'),
+            array('right')
+        );
+        $table->setData(array(
+            array(1, 'Sujeet', 26),
+            array(2, 'Suraj', 25),
+            array(3, 'Pankaj', 24),
+            array(4, 'Sanjeet', 27),
+        ));
+        $cli->stdio->write($table->render());
+        $cli->stdio->ln();
+    }
 });

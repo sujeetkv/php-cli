@@ -9,6 +9,7 @@
 namespace SujeetKumar\PhpCli;
 
 use SujeetKumar\PhpCli\Helper\TableLayout;
+use SujeetKumar\PhpCli\Helper\Table;
 use SujeetKumar\PhpCli\Helper\Figlet;
 
 /**
@@ -29,7 +30,7 @@ class Cli
      */
     public function __construct($commands = array()) {
         if (!StdIO::isCli()) {
-            throw new CliException('"This program is only meant for Command Line Interface.');
+            throw new CliException('This program is only meant for Command Line Interface.');
         }
         
         ini_set('html_errors', 0);
@@ -161,6 +162,17 @@ class Cli
             $bar = '|' . $this->stdio->colorizeText(str_repeat('#', $blen), 'green', 'green') . str_repeat('_', ($remlen - $blen)) . '|';
             $this->stdio->overwrite($status . ' ' . $bar . ' ' . $info);
         }
+    }
+    
+    /**
+     * Get Table object
+     * 
+     * @param int $width
+     */
+    public function getTable($width = null) {
+        $table = new Table($this->stdio);
+        empty($width) || $table->setWidth($width);
+        return $table;
     }
     
     /**
