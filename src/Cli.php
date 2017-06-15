@@ -87,7 +87,7 @@ class Cli
         } else {
             $text[] = $tableLayout->formatRow(array('', $args->getCommand() . ' [OPTION] [VALUE] ...')) . StdIO::EOL;
             $text[] = $optHeading;
-            $tableLayout->setColWidths(array('5%', '20%', '*'));
+            $tableLayout->setColWidths(array('5%', '40%', '*'));
             foreach ($options as $opt) {
                 $text[] = $tableLayout->formatRow(array(
                     '',
