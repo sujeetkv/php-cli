@@ -152,6 +152,17 @@ class StdIO
     }
     
     /**
+     * Overwrite the current line
+     * 
+     * @param mixed $text
+     */
+    public function overwrite($text) {
+        $this->write("\x0D");// Move the cursor to the beginning of the line
+        $this->write("\x1B[2K");// Erase the line
+        return $this->write($text);
+    }
+    
+    /**
      * Set color for next write operation
      * 
      * @param string $foregroundColor

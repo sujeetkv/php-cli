@@ -32,7 +32,7 @@ $cli->stdio->ln();
 $cli->stdio->writeln('Progress Count Demo:');
 for ($i = 1; $i <= 10; $i++) {
     sleep(1); //do some stuff---
-    $cli->showStatus('Step ' . $i, ($i == 10 ? true : false));
+    $cli->showStatus('Step ' . $i);
 }
 
 $cli->stdio->ln();

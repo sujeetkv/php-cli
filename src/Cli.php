@@ -111,15 +111,14 @@ class Cli
      * Print and Overwrite line, useful to show current status
      * 
      * @param	string $msg
-     * @param	bool $passive
      */
-    public function showStatus($msg, $passive = false) {
+    public function showStatus($msg) {
         static $_len = 0;
         $len = strlen($msg);
         if ($len) {
             $_msg = ($len < $_len) ? str_pad($msg, $_len) : $msg;
             $_len = $len;
-            $this->stdio->write('  ' . $_msg . (($passive) ? StdIO::EOL : StdIO::CR));
+            $this->stdio->overwrite(' ' . $_msg);
         }
     }
     
@@ -133,23 +132,34 @@ class Cli
     public function showProgress($totalStep, $currentStep, $msg = 'Processing...') {
         if ($totalStep > 0) {
             $p = floor((($currentStep / $totalStep) * 100));
-            $this->stdio->write('  ' . $msg . ' ' . $p . '%' . (($p == 100) ? " Complete !" . StdIO::EOL : StdIO::CR));
+            $this->stdio->overwrite(' ' . $msg . ' ' . $p . '% ');
         }
     }
     
     /**
      * Show progress bar, to be used with loop
      * 
-     * @param	int $totalStep
-     * @param	int $currentStep
+     * @param int $totalStep
+     * @param int $currentStep
+     * @param string $info
+     * @param int $maxWidth
      */
-    public function showProgressBar($totalStep, $currentStep) {
+    public function showProgressBar($totalStep, $currentStep, $info = ' ', $maxWidth = null) {
+        static $width = null;
+        $cliWidth = $this->stdio->getWidth();
+        is_null($width) && $width = $cliWidth;
+        empty($info) && $info = ' ';
+        empty($maxWidth) || $width = min($maxWidth, $cliWidth);
+        
         if ($totalStep > 0) {
             $p = floor((($currentStep / $totalStep) * 100));
-            //$b = '[' . str_pad(str_repeat('#', intval($p / 2)), 50, '_') . ']';
-            $blen = intval($p / 2);
-            $b = '|' . $this->stdio->colorizeText(str_repeat('#', $blen), 'green', 'green') . str_repeat('_', (50 - $blen)) . '|';
-            $this->stdio->write('  ' . $p . '% ' . StdIO::TAB . $b . (($p == 100) ? StdIO::EOL : StdIO::CR));
+            //$bar = '[' . str_pad(str_repeat('#', intval($p / 2)), 50, '_') . ']';
+            $status = str_pad($p, 3, ' ', STR_PAD_LEFT) . '%';
+            $remlen = $width - (strlen($status) + strlen($info) + 4);
+            $div = (100 / $remlen);
+            $blen = min($remlen, ceil($p / $div));
+            $bar = '|' . $this->stdio->colorizeText(str_repeat('#', $blen), 'green', 'green') . str_repeat('_', ($remlen - $blen)) . '|';
+            $this->stdio->overwrite($status . ' ' . $bar . ' ' . $info);
         }
     }
     
