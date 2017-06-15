@@ -138,7 +138,9 @@ class TableLayout
                 }
                 $chunks[] = $chunk;
             }
-            $out[] = implode($this->separator, $chunks);
+            $out[] = (empty($this->separator) || $this->separator == ' ') 
+                     ? implode($this->separator, $chunks) 
+                     : $this->separator . implode($this->separator, $chunks) . $this->separator;
         }
         
         return implode(StdIO::LF, $out);
@@ -155,7 +157,10 @@ class TableLayout
      */
     protected function calculateColLengths($columnWidths) {
         $idx = 0;
-        $fixed = (count($columnWidths) - 1) * $this->strlen($this->separator); // separator are used already
+        // separator are used already
+        $fixed = (empty($this->separator) || $this->separator == ' ') 
+                 ? (count($columnWidths) - 1) * $this->strlen($this->separator) 
+                 : (count($columnWidths) + 1) * $this->strlen($this->separator);
         $fluid = -1;
 
         // first pass for format check and fixed columns
