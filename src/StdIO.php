@@ -18,19 +18,40 @@ class StdIO
     const TAB = "\t";
     const EOL = PHP_EOL;
     
+    /** @var resource STDOUT */
     protected $stdout = null;
+    
+    /** @var resource STDERR */
     protected $stderr = null;
+    
+    /** @var resource STDIN */
     protected $stdin = null;
+    
+    /** @var bool readline supported */
     protected $hasReadline = false;
+    
+    /** @var bool color supported */
     protected $hasColorSupport = false;
+    
+    /** @var bool color enabled */
     protected $colorEnabled = true;
+    
+    /** @var int cli width */
     protected $cliWidth = 75;
+    
+    /** @var int cli height */
     protected $cliHeight = 50;
     
+    /** @var string text color */
     protected $foregroundColor = null;
+    
+    /** @var string background color */
     protected $backgroundColor = null;
+    
+    /** @var array text attribute */
     protected $textAttribute = array();
     
+    /** @var array text colors */
     protected $foregroundColors = array(
         'black'         => '0;30',
         'dark_gray'     => '1;30',
@@ -50,6 +71,7 @@ class StdIO
         'white'         => '1;37'
     );
     
+    /** @var array background colors */
     protected $backgroundColors = array(
         'black'         => '40',
         'red'           => '41',
@@ -61,6 +83,7 @@ class StdIO
         'light_gray'    => '47'
     );
     
+    /** @var array text attributes */
     protected $textAttributes = array(
         'reset'         => '0',
         'bold'          => '1',
@@ -71,6 +94,9 @@ class StdIO
         'invisible'     => '8'
     );
     
+    /**
+     * Initialize StdIO class
+     */
     public function __construct() {
         $this->stdout = @fopen('php://stdout', 'w');
         $this->stderr = @fopen('php://stderr', 'w');
@@ -220,18 +246,32 @@ class StdIO
         return $str;
     }
     
+    /**
+     * Check color support
+     */
     public function hasColorSupport() {
         return $this->hasColorSupport;
     }
     
+    /**
+     * Check color enabled
+     */
     public function colorEnabled() {
         return $this->colorEnabled;
     }
     
+    /**
+     * Enable or Disable color output
+     * 
+     * @param bool $colorEnabled
+     */
     public function enableColor($colorEnabled = true) {
         $this->colorEnabled = $colorEnabled;
     }
     
+    /**
+     * Check readline support
+     */
     public function hasReadline() {
         return $this->hasReadline;
     }
@@ -302,10 +342,16 @@ class StdIO
         return $this;
     }
     
+    /**
+     * Check if execution environment is cli
+     */
     public static function isCli() {
         return (php_sapi_name() == 'cli' or defined('STDIN'));
     }
     
+    /**
+     * Check for windows os
+     */
     public static function isWindows() {
         return (DIRECTORY_SEPARATOR === '\\');
     }

@@ -45,12 +45,12 @@ $cli->prompt->createShell('DemoShell', $shellCommands, function ($cli, $command,
             array('right')
         );
         $table->setData(array(
-            array(1, 'Sujeet', 26),
-            array(2, 'Suraj', 25),
-            array(3, 'Pankaj', 24),
-            array(4, 'Sanjeet', 27),
+            array('1.', 'Sujeet', 26),
+            array('2.', 'Suraj', 25),
+            array('3.', 'Pankaj', 24),
+            array('4.', 'Sanjeet', 27),
         ));
-        $cli->stdio->write($table->render());
+        $cli->stdio->write($table);
         $cli->stdio->ln();
     }
 });

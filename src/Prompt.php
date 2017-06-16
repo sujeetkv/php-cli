@@ -13,10 +13,32 @@ namespace SujeetKumar\PhpCli;
  */
 class Prompt
 {
+    /**
+     * Cli
+     * 
+     * @var object
+     */
     protected $cli;
+    
+    /**
+     * Args
+     * 
+     * @var object
+     */
     protected $args;
+    
+    /**
+     * Shell History file
+     * 
+     * @var string
+     */
     protected $shellHistory = './.history_cli';
     
+    /**
+     * Initialize Prompt class
+     * 
+     * @param Cli $cli
+     */
     public function __construct($cli) {
         $this->cli = $cli;
     }
@@ -113,7 +135,7 @@ EOF;
             $command = $this->cli->stdio->read($prompt . ' ');
             
             if (false === $command) {
-                $this->cli->stdio->ln(2)->write('bye', 2);
+                $this->cli->stdio->ln(2)->write('Bye', 2);
                 break;
             }
             
@@ -134,7 +156,7 @@ EOF;
                 $list = array_keys($this->args->getCommandList());
                 
                 if ($cmd == 'exit') {
-                    $this->cli->stdio->ln()->write('bye', 2);
+                    $this->cli->stdio->ln()->write('Bye', 2);
                     break;
                 } elseif ($cmd == 'list') {
                     $this->cli->stdio->writeln('List of valid commands:');

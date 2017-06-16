@@ -15,22 +15,69 @@ use SujeetKumar\PhpCli\StdIO;
  */
 class Table
 {
+    /**
+     * TableLayout
+     * 
+     * @var object
+     */
     protected $tableLayout;
+    
+    /**
+     * Formatted table header
+     * 
+     * @var string
+     */
     protected $tableHeader = '';
+    
+    /**
+     * Table rows
+     * 
+     * @var array
+     */
     protected $tableData = array();
+    
+    /**
+     * Final rendered table
+     * 
+     * @var string
+     */
     protected $renderedTable = '';
+    
+    /**
+     * Column widths
+     * 
+     * @var array
+     */
     protected $colWidths = array();
     
+    /**
+     * Initialize Table class
+     * 
+     * @param StdIO $stdio
+     */
     public function __construct(StdIO $stdio) {
         $this->tableLayout = new TableLayout($stdio);
         $this->tableLayout->setSeparator('|');
     }
     
+    /**
+     * Set table width
+     * 
+     * @param int $width
+     */
     public function setWidth($width) {
         $this->tableLayout->setMaxWidth($width);
         return $this;
     }
     
+    /**
+     * Set table header
+     * 
+     * @param array $columns
+     * @param array $columnWidths
+     * @param array $columnAligns
+     * @param array $colors
+     */
     public function setHeader($columns, $columnWidths, $columnAligns = array(), $colors = array()) {
         is_array($columnWidths) && $this->tableLayout->setColWidths($columnWidths);
         is_array($columnAligns) && $this->tableLayout->setColAligns($columnAligns);
@@ -41,11 +88,25 @@ class Table
         return $this;
     }
     
+    /**
+     * Set table row
+     * 
+     * @param array $columns
+     * @param array $colors
+     * @param array $columnAligns
+     */
     public function setRow($columns, $colors = array(), $columnAligns = array()) {
         $this->tableData[] = $this->tableLayout->formatRow($columns, $colors, array(), $columnAligns);
         return $this;
     }
     
+    /**
+     * Set table rows
+     * 
+     * @param array $rows
+     * @param array $colors
+     * @param array $columnAligns
+     */
     public function setData($rows, $colors = array(), $columnAligns = array()) {
         foreach ($rows as $row) {
             is_array($row) && $this->setRow($row, $colors, $columnAligns);
@@ -53,6 +114,9 @@ class Table
         return $this;
     }
     
+    /**
+     * Create final table
+     */
     public function render() {
         $borderArr = array();
         $border = '';
@@ -68,5 +132,9 @@ class Table
         empty($border) || $this->renderedTable .= $border . StdIO::EOL;
         
         return $this->renderedTable;
+    }
+    
+    public function __toString() {
+        return $this->render();
     }
 }

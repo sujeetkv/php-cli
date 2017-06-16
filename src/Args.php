@@ -13,10 +13,33 @@ namespace SujeetKumar\PhpCli;
  */
 class Args
 {
+    /**
+     * Current arguments
+     * 
+     * @var array
+     */
     protected $arguments = array();
+    
+    /**
+     * Parsed options
+     * 
+     * @var array
+     */
     protected $options = array();
+    
+    /**
+     * Current command
+     * 
+     * @var string
+     */
     protected $command = null;
     
+    /**
+     * Initialize Args class
+     * 
+     * @param int $argsCount
+     * @param array $argsValue
+     */
     public function __construct($argsCount = 0, $argsValue = array()) {
         empty($argsCount) && $argsCount = isset($argc) ? $argc : (isset($_SERVER['argc']) ? $_SERVER['argc'] : 0);
         empty($argsValue) && $argsValue = isset($argv) ? $argv : (isset($_SERVER['argv']) ? $_SERVER['argv'] : array());
@@ -29,6 +52,11 @@ class Args
         }
     }
     
+    /**
+     * Register commands
+     * 
+     * @param array $commands
+     */
     public function registerCommands($commands) {
         if (!empty($commands) && is_array($commands)) {
             foreach ($commands as $cmd => $cmdInfo) {
@@ -51,10 +79,16 @@ class Args
         return $this;
     }
     
+    /**
+     * Get current command
+     */
     public function getCommand() {
         return $this->command;
     }
     
+    /**
+     * Get all commands with options
+     */
     public function getCommandList() {
         return $this->options;
     }
@@ -75,6 +109,9 @@ class Args
         }
     }
     
+    /**
+     * Get key-value pairs of current arguments
+     */
     public function getOpt() {
         $opts = array();
         $options = $this->getOption();
@@ -87,7 +124,7 @@ class Args
     }
     
     /**
-     * Check if argument passed and registerd
+     * Check if argument passed and registered
      * 
      * @param string $option
      * @param int $pos
@@ -142,6 +179,9 @@ class Args
         return (false !== $this->getOption($option, false));
     }
     
+    /**
+     * Get help note of current command
+     */
     public function getHelpNote() {
         return isset($this->options[$this->command]['helpNote']) ? $this->options[$this->command]['helpNote'] : null;
     }

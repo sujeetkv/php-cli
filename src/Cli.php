@@ -17,14 +17,43 @@ use SujeetKumar\PhpCli\Helper\Figlet;
  */
 class Cli
 {
+    /**
+     * StdIO
+     * 
+     * @var object
+     */
     public $stdio;
+    
+    /**
+     * Args
+     * 
+     * @var object
+     */
     public $args;
+    
+    /**
+     * Prompt
+     * 
+     * @var object
+     */
     public $prompt;
+    
+    /**
+     * Figlet
+     * 
+     * @var object
+     */
     public $figlet;
+    
+    /**
+     * Help note for current script
+     * 
+     * @var string
+     */
     protected $helpNote = '';
     
     /**
-     * Initialize cli
+     * Initialize Cli class
      * 
      * @param array $settings
      */
@@ -111,7 +140,7 @@ class Cli
     /**
      * Print and Overwrite line, useful to show current status
      * 
-     * @param	string $msg
+     * @param string $msg
      */
     public function showStatus($msg) {
         static $_len = 0;
@@ -126,9 +155,9 @@ class Cli
     /**
      * Show progress percentage, to be used with loop
      * 
-     * @param	int $totalStep
-     * @param	int $currentStep
-     * @param	string $msg
+     * @param int $totalStep
+     * @param int $currentStep
+     * @param string $msg
      */
     public function showProgress($totalStep, $currentStep, $msg = 'Processing...') {
         if ($totalStep > 0) {
@@ -197,7 +226,7 @@ class Cli
     }
     
     /**
-     * Stop cli
+     * Exit the execution
      * 
      * @param int $status exit code
      */
