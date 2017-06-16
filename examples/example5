@@ -31,7 +31,7 @@ $shellCommands = array(
     'world' => array()
 );
 
-$cli->prompt->createShell('DemoShell', $shellCommands, function ($cli, $command, $options) {
+$cli->prompt->renderShell('DemoShell', $shellCommands, function ($cli, $command, $options) {
     $cli->stdio->writeln('cmd:' . $command);
     $cli->stdio->write('opt:');
     print_r($options);

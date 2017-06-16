@@ -89,7 +89,7 @@ class Prompt
      * @param string $prompt
      * @param bool $showBanner
      */
-    public function createShell($shellName, $commands, $shellHandler, $prompt = '>', $showBanner = true) {
+    public function renderShell($shellName, $commands, $shellHandler, $prompt = '>', $showBanner = true) {
         if (empty($commands) || !is_array($commands)) {
             throw new CliException('Invalid variable commands provided.');
         }
