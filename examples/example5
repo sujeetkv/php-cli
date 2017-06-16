@@ -12,7 +12,9 @@ require_once '../src/CliException.php';
 use SujeetKumar\PhpCli\Cli;
 
 $commands = array(
-    basename(__FILE__) => array()
+    basename(__FILE__) => array(
+        'helpNote' => 'This script is meant for interactive shell demonstration.'
+    )
 );
 
 $cli = new Cli($commands);
