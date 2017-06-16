@@ -80,9 +80,10 @@ class Prompt
      * @param array $commands
      * @param callable $shellHandler
      * @param string $prompt
+     * @param string $historyPath
      * @param bool $showBanner
      */
-    public function renderShell($shellName, $commands, $shellHandler, $prompt = '>', $showBanner = true, $historyPath = './') {
+    public function renderShell($shellName, $commands, $shellHandler, $prompt = '>', $historyPath = './', $showBanner = true) {
         if (empty($commands) || !is_array($commands)) {
             throw new CliException('Invalid variable commands provided.');
         }
@@ -92,7 +93,7 @@ class Prompt
         }
         
         if (!is_dir($historyPath)) {
-            throw new CliException('Given history path not exists:' . $historyPath);
+            throw new CliException('Given history path does not exist:' . $historyPath);
         }
         
         $shellHistory = rtrim($historyPath, '/\\') . '/.history_' . $shellName;
