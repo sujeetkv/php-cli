@@ -28,13 +28,6 @@ class Prompt
     protected $args;
     
     /**
-     * Shell History file
-     * 
-     * @var string
-     */
-    protected $shellHistory = './.history_cli';
-    
-    /**
      * Initialize Prompt class
      * 
      * @param Cli $cli
@@ -89,7 +82,7 @@ class Prompt
      * @param string $prompt
      * @param bool $showBanner
      */
-    public function renderShell($shellName, $commands, $shellHandler, $prompt = '>', $showBanner = true) {
+    public function renderShell($shellName, $commands, $shellHandler, $prompt = '>', $showBanner = true, $historyPath = './') {
         if (empty($commands) || !is_array($commands)) {
             throw new CliException('Invalid variable commands provided.');
         }
@@ -98,13 +91,17 @@ class Prompt
             throw new CliException('Invalid callable shell_handler provided: ' . $callable_name);
         }
         
-        $this->shellHistory = './.history_' . $shellName;
+        if (!is_dir($historyPath)) {
+            throw new CliException('Given history path not exists:' . $historyPath);
+        }
+        
+        $shellHistory = rtrim($historyPath, '/\\') . '/.history_' . $shellName;
         
         $commands['list'] = array();
         $commands['exit'] = array();
         
         if ($this->cli->stdio->hasReadline()) {
-            readline_read_history($this->shellHistory);
+            readline_read_history($shellHistory);
             readline_completion_function(function () use ($commands) {
                 return $this->shellAutoCompleter($commands);
             });
@@ -144,7 +141,7 @@ EOF;
             if (!empty($command)) {
                 if ($this->cli->stdio->hasReadline()) {
                     readline_add_history($command);
-                    readline_write_history($this->shellHistory);
+                    readline_write_history($shellHistory);
                 }
                 
                 $args = array_map('trim', explode(' ', $command));
