@@ -79,11 +79,11 @@ class Prompt
      * @param string $shellName
      * @param array $commands
      * @param callable $shellHandler
-     * @param string $prompt
      * @param string $historyPath
+     * @param string $prompt
      * @param bool $showBanner
      */
-    public function renderShell($shellName, $commands, $shellHandler, $prompt = '>', $historyPath = './', $showBanner = true) {
+    public function renderShell($shellName, $commands, $shellHandler, $historyPath = './', $prompt = '>', $showBanner = true) {
         if (empty($commands) || !is_array($commands)) {
             throw new CliException('Invalid variable commands provided.');
         }
