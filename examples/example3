@@ -1,12 +1,12 @@
 #!/usr/bin/env php
 <?php
-require_once '../src/Cli.php';
-require_once '../src/StdIO.php';
-require_once '../src/Args.php';
-require_once '../src/Prompt.php';
-require_once '../src/Helper/TableLayout.php';
-require_once '../src/Helper/Figlet.php';
-require_once '../src/CliException.php';
+require_once __DIR__ . '/../src/Cli.php';
+require_once __DIR__ . '/../src/StdIO.php';
+require_once __DIR__ . '/../src/Args.php';
+require_once __DIR__ . '/../src/Prompt.php';
+require_once __DIR__ . '/../src/Helper/TableLayout.php';
+require_once __DIR__ . '/../src/Helper/Figlet.php';
+require_once __DIR__ . '/../src/CliException.php';
 
 use SujeetKumar\PhpCli\Cli;
 

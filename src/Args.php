@@ -45,7 +45,7 @@ class Args
         empty($argsValue) && $argsValue = isset($argv) ? $argv : (isset($_SERVER['argv']) ? $_SERVER['argv'] : array());
         
         if ($argsCount > 0 && !empty($argsValue)) {
-            $this->command = trim(array_shift($argsValue), './\\');
+            $this->command = basename(array_shift($argsValue));
             $this->arguments = $argsValue;
         } else {
             throw new CliException('Could not process arguments.');
