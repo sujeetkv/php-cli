@@ -108,14 +108,15 @@ class Cli
         $tableLayout = new TableLayout($this->stdio);
         $tableLayout->setMaxWidth(min(75, $this->stdio->getWidth()));
         $options = $args->getOption();
-        $text[] = $tableLayout->formatRow(array('Usage:'));
-        $optHeading = $tableLayout->formatRow(array('Available options are:'));
+        $text[] = $tableLayout->formatRow(array('Usage:'), array('brown'));
+        $optHeading = $tableLayout->formatRow(array('Options:'), array('brown'));
         
         $tableLayout->setColWidths(array('5%', '*'));
         if (empty($options)) {
             $text[] = $tableLayout->formatRow(array('', $args->getCommand()));
         } else {
-            $text[] = $tableLayout->formatRow(array('', $args->getCommand() . ' [OPTION] [VALUE] ...')) . StdIO::EOL;
+            $text[] = $tableLayout->formatRow(array('', $args->getCommand() . ' [OPTION] [VALUE] ...'));
+            $text[] = $tableLayout->formatRow(array('', ''));
             $text[] = $optHeading;
             $tableLayout->setColWidths(array('5%', '40%', '*'));
             foreach ($options as $opt) {
@@ -123,6 +124,9 @@ class Cli
                     '',
                     $opt['opt'] . ', ' . $opt['longOpt'],
                     $opt['description']
+                ), array(
+                    '',
+                    'green'
                 ));
             }
         }
@@ -130,7 +134,8 @@ class Cli
         empty($helpNote) && $helpNote = $args->getHelpNote();
         if (!empty($helpNote)) {
             $tableLayout->setColWidths(array('*'));
-            $text[] = StdIO::EOL . $tableLayout->formatRow(array($helpNote));
+            $text[] = $tableLayout->formatRow(array(''));
+            $text[] = $tableLayout->formatRow(array($helpNote));
         }
         
         $this->stdio->write($text, 2);
@@ -208,12 +213,14 @@ class Cli
      * Get figlet of text
      * 
      * @param string $text
+     * @param string $color
      * @param string $fontFile
+     * @param bool $loadGerman
      */
-    public function createFiglet($text, $fontFile = null, $loadGerman = true) {
+    public function createFiglet($text, $color = null, $fontFile = null, $loadGerman = true) {
         $this->figlet || $this->figlet = new Figlet();
         $fontFile && $this->figlet->loadFont($fontFile, $loadGerman);
-        return $this->figlet->render($text);
+        return $this->stdio->colorizeText($this->figlet->render($text), $color);
     }
     
     /**

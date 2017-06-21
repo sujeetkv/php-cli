@@ -98,8 +98,8 @@ class Prompt
         
         $shellHistory = rtrim($historyPath, '/\\') . '/.history_' . $shellName;
         
-        $commands['list'] = array();
-        $commands['exit'] = array();
+        $commands['list'] = array('helpNote' => 'Show list of commands.');
+        $commands['exit'] = array('helpNote' => 'Exit the shell.');
         
         if ($this->cli->stdio->hasReadline()) {
             readline_read_history($shellHistory);
@@ -112,16 +112,16 @@ class Prompt
 
 Welcome to the {$shellName} shell.
 
-At the prompt, type list to get a list of 
+At the prompt, type {$this->cli->stdio->colorizeText('list', 'brown')} to get a list of 
 available commands.
 
-To exit the shell, type ^D or exit.
+To exit the shell, type {$this->cli->stdio->colorizeText('^D', 'brown')} or {$this->cli->stdio->colorizeText('exit', 'brown')}.
 
 EOF;
         
         if ($showBanner) {
             $banner = <<<EOF
-{$this->cli->createFiglet($shellName)}
+{$this->cli->createFiglet($shellName, 'green')}
 EOF;
             $this->cli->stdio->writeln($banner . $header);
         } else {
@@ -151,25 +151,27 @@ EOF;
                 
                 $cmd = $this->args->registerCommands($commands)->getCommand();
                 
-                $list = array_keys($this->args->getCommandList());
+                $cmdList = $this->args->getCommandList();
+                $list = array();
+                foreach ($cmdList as $c => $copt) {
+                    $list[] = ' ' . $this->cli->stdio->colorizeText($c, 'green') . StdIO::TAB . $copt['helpNote'];
+                }
                 
-                if ($cmd == 'exit') {
+                if ($this->args->hasOption('h')) {
+                    $this->cli->showHelp($this->args);
+                    continue;
+                } elseif ($cmd == 'exit') {
                     $this->cli->stdio->ln()->write('Bye', 2);
                     break;
                 } elseif ($cmd == 'list') {
-                    $this->cli->stdio->writeln('List of valid commands:');
+                    $this->cli->stdio->writeln('Available commands:');
                     $this->cli->stdio->write($list, 2);
                     continue;
-                } elseif (!in_array($cmd, $list)) {
+                } elseif (!in_array($cmd, array_keys($cmdList))) {
                     $this->cli->stdio->writeln(array("No command '$cmd' found.", 'Available commands are:'));
                     $this->cli->stdio->write($list, 2);
                     continue;
                 } else {
-                    if ($this->args->hasOption('h')) {
-                        $this->cli->showHelp($this->args);
-                        continue;
-                    }
-                    
                     $res = call_user_func($shellHandler, $this->cli, $cmd, $this->args->getOpt());
                 }
             }
