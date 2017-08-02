@@ -122,6 +122,7 @@ EOF;
         if ($showBanner) {
             $banner = <<<EOF
 {$this->cli->createFiglet($shellName, 'green')}
+
 EOF;
             $this->cli->stdio->writeln($banner . $header);
         } else {
