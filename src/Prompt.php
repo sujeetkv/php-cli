@@ -155,7 +155,7 @@ EOF;
                 $cmdList = $this->args->getCommandList();
                 $list = array();
                 foreach ($cmdList as $c => $copt) {
-                    $list[] = ' ' . $this->cli->stdio->colorizeText($c, 'green') . StdIO::TAB . $copt['helpNote'];
+                    $list[] = ' ' . $this->cli->stdio->colorizeText($c, 'green') . '  ' . $copt['helpNote'];
                 }
                 
                 if ($this->args->hasOption('h')) {
