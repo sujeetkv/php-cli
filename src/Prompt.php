@@ -82,8 +82,9 @@ class Prompt
      * @param string $historyPath
      * @param string $prompt
      * @param bool $showBanner
+     * @param string $bannerColor
      */
-    public function renderShell($shellName, $commands, $shellHandler, $historyPath = './', $prompt = '>', $showBanner = true) {
+    public function renderShell($shellName, $commands, $shellHandler, $historyPath = './', $prompt = '>', $showBanner = true, $bannerColor = 'light_green') {
         if (empty($commands) || !is_array($commands)) {
             throw new CliException('Invalid variable commands provided.');
         }
@@ -121,7 +122,7 @@ EOF;
         
         if ($showBanner) {
             $banner = <<<EOF
-{$this->cli->createFiglet($shellName, 'green')}
+{$this->cli->createFiglet($shellName, $bannerColor)}
 
 EOF;
             $this->cli->stdio->writeln($banner . $header);
