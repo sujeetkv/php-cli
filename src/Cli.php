@@ -55,9 +55,11 @@ class Cli
     /**
      * Initialize Cli class
      * 
-     * @param array $settings
+     * @param array $commands
+     * @param int $argsCount
+     * @param array $argsValue
      */
-    public function __construct($commands = array()) {
+    public function __construct($commands = array(), $argsCount = 0, $argsValue = array()) {
         if (!StdIO::isCli()) {
             throw new CliException('This program is only meant for Command Line Interface.');
         }
@@ -66,7 +68,7 @@ class Cli
         set_time_limit(0);
         
         $this->stdio = new StdIO();
-        $this->args = new Args();
+        $this->args = new Args($argsCount, $argsValue);
         $this->prompt = new Prompt($this);
         
         $this->initialize($commands);
