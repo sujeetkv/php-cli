@@ -239,7 +239,7 @@ class Cli
      * 
      * @param int $status exit code
      */
-    public function stop($status = 0) {
+    public function exitScript($status = 0) {
         exit($status);
     }
     
@@ -258,7 +258,7 @@ class Cli
             $this->args->registerCommands($commands);
             if ($this->args->hasOption('h')) {
                 $this->showHelp($this->args);
-                $this->stop();
+                $this->exitScript();
             }
         }
     }

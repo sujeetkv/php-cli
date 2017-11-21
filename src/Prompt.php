@@ -13,19 +13,17 @@ namespace SujeetKumar\PhpCli;
  */
 class Prompt
 {
-    /**
-     * Cli
-     * 
-     * @var object
-     */
+    /** @var object Cli */
     protected $cli;
     
-    /**
-     * Args
-     * 
-     * @var object
-     */
+    /** @var object Args */
     protected $args;
+    
+    /** @var bool */
+    private static $stty;
+    
+    /** @var string|bool */
+    private static $shell;
     
     /**
      * Initialize Prompt class
@@ -40,12 +38,13 @@ class Prompt
      * Get standard input from console
      * 
      * @param string $promptMessage
-     * @param bool $secure
+     * @param bool $hiddenResponse
+     * @param bool $hiddenFallback
      */
-    public function getInput($promptMessage, $secure = false) {
+    public function getInput($promptMessage, $hiddenResponse = false, $hiddenFallback = true) {
         $input = null;
         if (!empty($promptMessage)) {
-            if ($secure) {
+            if ($hiddenResponse) {
                 if (StdIO::isWindows()) {
                     $exe = __DIR__ . '/bin/hiddeninput.exe';
                     // handle code running from a phar
@@ -60,11 +59,25 @@ class Prompt
                     if (isset($tmp_exe)) {
                         unlink($tmp_exe);
                     }
-                } elseif ($this->cli->stdio->hasColorSupport()) {
-                    $input = trim($this->cli->stdio->read("$promptMessage: \033[8m"));
-                    $this->cli->stdio->write("\033[0m");
+                } elseif ($this->hasStty()) {
+                    $sttyMode = shell_exec('stty -g');
+                    $this->cli->stdio->write("$promptMessage: ");
+                    shell_exec('stty -echo');
+                    $input = trim(fgets($this->cli->stdio->getInputStream(), 4096));
+                    shell_exec(sprintf('stty %s', $sttyMode));
+                    $this->cli->stdio->ln();
+                } elseif (false !== ($shell = $this->getShell())) {
+                    $this->cli->stdio->write("$promptMessage: ");
+                    $readCmd = 'csh' === $shell ? 'set mypassword = $<' : 'read -r mypassword';
+                    $command = sprintf("/usr/bin/env %s -c 'stty -echo; %s; stty echo; echo \$mypassword'", $shell, $readCmd);
+                    $input = rtrim(shell_exec($command));
+                    $this->cli->stdio->ln();
                 } else {
-                    throw new CliException('Secure input not supported.');
+                    if ($hiddenFallback) {
+                        $input = trim($this->cli->stdio->read("$promptMessage: "));
+                    } else {
+                        throw new CliException('Hidden response not supported.');
+                    }
                 }
             } else {
                 $input = trim($this->cli->stdio->read("$promptMessage: "));
@@ -180,7 +193,7 @@ EOF;
             
         } while ($res !== false);
         
-        $this->cli->stop();
+        $this->cli->exitScript();
     }
     
     private function shellAutoCompleter($rawCommands) {
@@ -204,5 +217,37 @@ EOF;
             }
         }
         return $list;
+    }
+    
+    /**
+     * Returns a valid unix shell.
+     */
+    private function getShell() {
+        if (null !== self::$shell) {
+            return self::$shell;
+        }
+        self::$shell = false;
+        if (file_exists('/usr/bin/env')) {
+            // handle other OSs with bash/zsh/ksh/csh if available to hide the answer
+            $test = '/usr/bin/env %s -c "echo OK" 2> /dev/null';
+            foreach (array('bash', 'zsh', 'ksh', 'csh') as $sh) {
+                if ('OK' === rtrim(shell_exec(sprintf($test, $sh)))) {
+                    self::$shell = $sh;
+                    break;
+                }
+            }
+        }
+        return self::$shell;
+    }
+    
+    /**
+     * Returns whether Stty is available or not.
+     */
+    private function hasStty() {
+        if (null !== self::$stty) {
+            return self::$stty;
+        }
+        exec('stty 2>&1', $output, $exitcode);
+        return self::$stty = (0 === $exitcode);
     }
 }

@@ -28,7 +28,7 @@ $cli->stdio->hr();
 
 if ($cli->args->hasOption('b')) {
     $cli->stdio->writeln('Bye');
-    $cli->stop();
+    $cli->exitScript();
 }
 
 var_dump($cli->args->isValidOption('a'));

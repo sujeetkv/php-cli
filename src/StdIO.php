@@ -356,6 +356,22 @@ class StdIO
         return (DIRECTORY_SEPARATOR === '\\');
     }
     
+    /**
+     * Get input stream
+     */
+    public function getInputStream() {
+        return $this->stdin;
+    }
+    
+    /**
+     * Get output stream
+     * 
+     * @param bool $stdout
+     */
+    public function getOutputStream($stdout = true) {
+        return $stdout ? $this->stdout : $this->stderr;
+    }
+    
     public function __destruct() {
         if (is_resource($this->stdout)) {
             fclose($this->stdout);
