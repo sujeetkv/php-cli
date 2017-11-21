@@ -97,7 +97,7 @@ class Prompt
      * @param bool $showBanner
      * @param string $bannerColor
      */
-    public function renderShell($shellName, $commands, $shellHandler, $historyPath = './', $prompt = '>', $showBanner = true, $bannerColor = 'light_green') {
+    public function emulateShell($shellName, $commands, $shellHandler, $historyPath = './', $prompt = '>', $showBanner = true, $bannerColor = 'light_green') {
         if (empty($commands) || !is_array($commands)) {
             throw new CliException('Invalid variable commands provided.');
         }
