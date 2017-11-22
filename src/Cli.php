@@ -8,6 +8,7 @@
 
 namespace SujeetKumar\PhpCli;
 
+use SujeetKumar\PhpCli\Helper\ActiveLine;
 use SujeetKumar\PhpCli\Helper\TableLayout;
 use SujeetKumar\PhpCli\Helper\Table;
 use SujeetKumar\PhpCli\Helper\Figlet;
@@ -18,42 +19,37 @@ use SujeetKumar\PhpCli\Helper\Figlet;
 class Cli
 {
     /**
-     * StdIO
-     * 
-     * @var object
+     * @var object StdIO
      */
     public $stdio;
     
     /**
-     * Args
-     * 
-     * @var object
+     * @var object Args
      */
     public $args;
     
     /**
-     * Prompt
-     * 
-     * @var object
+     * @var object Prompt
      */
     public $prompt;
     
     /**
-     * Figlet
-     * 
-     * @var object
+     * @var object ActiveLine
+     */
+    public $activeLine;
+    
+    /**
+     * @var object Figlet
      */
     public $figlet;
     
     /**
-     * Help note for current script
-     * 
-     * @var string
+     * @var string Help note for current script
      */
     protected $helpNote = '';
     
     /**
-     * Initialize Cli class
+     * Constructor
      * 
      * @param array $commands
      * @param int $argsCount
@@ -70,6 +66,7 @@ class Cli
         $this->stdio = new StdIO();
         $this->args = new Args($argsCount, $argsValue);
         $this->prompt = new Prompt($this);
+        $this->activeLine = new ActiveLine($this->stdio);
         
         $this->initialize($commands);
     }
@@ -142,62 +139,6 @@ class Cli
         
         $this->stdio->write($text, 2);
         return $this;
-    }
-    
-    /**
-     * Print and Overwrite line, useful to show current status
-     * 
-     * @param string $msg
-     */
-    public function showStatus($msg) {
-        static $_len = 0;
-        $len = strlen($msg);
-        if ($len) {
-            $_msg = ($len < $_len) ? str_pad($msg, $_len) : $msg;
-            $_len = $len;
-            $this->stdio->overwrite(' ' . $_msg);
-        }
-    }
-    
-    /**
-     * Show progress percentage, to be used with loop
-     * 
-     * @param int $totalStep
-     * @param int $currentStep
-     * @param string $msg
-     */
-    public function showProgress($totalStep, $currentStep, $msg = 'Processing...') {
-        if ($totalStep > 0) {
-            $p = floor((($currentStep / $totalStep) * 100));
-            $this->stdio->overwrite(' ' . $msg . ' ' . $p . '% ');
-        }
-    }
-    
-    /**
-     * Show progress bar, to be used with loop
-     * 
-     * @param int $totalStep
-     * @param int $currentStep
-     * @param string $info
-     * @param int $maxWidth
-     */
-    public function showProgressBar($totalStep, $currentStep, $info = ' ', $maxWidth = null) {
-        static $width = null;
-        $cliWidth = $this->stdio->getWidth();
-        is_null($width) && $width = $cliWidth;
-        empty($info) && $info = ' ';
-        empty($maxWidth) || $width = min($maxWidth, $cliWidth);
-        
-        if ($totalStep > 0) {
-            $p = floor((($currentStep / $totalStep) * 100));
-            //$bar = '[' . str_pad(str_repeat('#', intval($p / 2)), 50, '_') . ']';
-            $status = str_pad($p, 3, ' ', STR_PAD_LEFT) . '%';
-            $remlen = $width - (strlen($status) + strlen($info) + 4);
-            $div = (100 / $remlen);
-            $blen = min($remlen, ceil($p / $div));
-            $bar = '|' . $this->stdio->colorizeText(str_repeat('#', $blen), 'green', 'green') . str_repeat('_', ($remlen - $blen)) . '|';
-            $this->stdio->overwrite($status . ' ' . $bar . ' ' . $info);
-        }
     }
     
     /**
