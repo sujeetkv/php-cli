@@ -3,10 +3,10 @@
  * PHP library to build command line tools
  *
  * @author  Sujeet <sujeetkv90@gmail.com>
- * @link    https://github.com/sujeet-kumar/php-cli
+ * @link    https://github.com/sujeetkv/php-cli
  */
 
-namespace SujeetKumar\PhpCli;
+namespace SujeetKV\PhpCli;
 
 /**
  * Prompt class

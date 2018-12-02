@@ -3,13 +3,13 @@
  * PHP library to build command line tools
  *
  * @author  Sujeet <sujeetkv90@gmail.com>
- * @link    https://github.com/sujeet-kumar/php-cli
+ * @link    https://github.com/sujeetkv/php-cli
  */
 
-namespace SujeetKumar\PhpCli\Helper;
+namespace SujeetKV\PhpCli\Helper;
 
-use SujeetKumar\PhpCli\StdIO;
-use SujeetKumar\PhpCli\CliException;
+use SujeetKV\PhpCli\StdIO;
+use SujeetKV\PhpCli\CliException;
 
 /**
  * TableLayout class

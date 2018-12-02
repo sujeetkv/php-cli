@@ -3,12 +3,12 @@
  * PHP library to build command line tools
  *
  * @author  Sujeet <sujeetkv90@gmail.com>
- * @link    https://github.com/sujeet-kumar/php-cli
+ * @link    https://github.com/sujeetkv/php-cli
  */
 
-namespace SujeetKumar\PhpCli\Helper;
+namespace SujeetKV\PhpCli\Helper;
 
-use SujeetKumar\PhpCli\StdIO;
+use SujeetKV\PhpCli\StdIO;
 
 /**
  * ActiveLine class

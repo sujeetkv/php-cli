@@ -1,9 +1,9 @@
 {
-    "name": "sujeet-kumar/php-cli",
+    "name": "sujeetkv/php-cli",
     "description": "PHP library to build command line tools",
     "type": "library",
     "keywords": ["cli", "command", "line", "interface"],
-    "homepage": "https://github.com/sujeet-kumar/php-cli/",
+    "homepage": "https://github.com/sujeetkv/php-cli/",
     "authors": [
         {
             "name": "Sujeet Kumar",
@@ -15,7 +15,7 @@
     },
     "autoload": {
         "psr-4": {
-            "SujeetKumar\\PhpCli\\": "src/"
+            "SujeetKV\\PhpCli\\": "src/"
         }
     },
     "minimum-stability": "dev"

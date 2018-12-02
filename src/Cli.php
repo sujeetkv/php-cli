@@ -3,15 +3,15 @@
  * PHP library to build command line tools
  *
  * @author  Sujeet <sujeetkv90@gmail.com>
- * @link    https://github.com/sujeet-kumar/php-cli
+ * @link    https://github.com/sujeetkv/php-cli
  */
 
-namespace SujeetKumar\PhpCli;
+namespace SujeetKV\PhpCli;
 
-use SujeetKumar\PhpCli\Helper\ActiveLine;
-use SujeetKumar\PhpCli\Helper\TableLayout;
-use SujeetKumar\PhpCli\Helper\Table;
-use SujeetKumar\PhpCli\Helper\Figlet;
+use SujeetKV\PhpCli\Helper\ActiveLine;
+use SujeetKV\PhpCli\Helper\TableLayout;
+use SujeetKV\PhpCli\Helper\Table;
+use SujeetKV\PhpCli\Helper\Figlet;
 
 /**
  * Cli class

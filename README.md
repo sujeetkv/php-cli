@@ -5,14 +5,16 @@ PHP library to build command line tools
 
 Install using composer:
 
-    {
-        "repositories": [
-            {
-                "type": "vcs",
-                "url": "https://github.com/sujeet-kumar/php-cli"
-            }
-        ],
-        "require": {
-            "sujeet-kumar/php-cli": "dev-master"
+```json
+{
+    "repositories": [
+        {
+            "type": "vcs",
+            "url": "https://github.com/sujeetkv/php-cli"
         }
+    ],
+    "require": {
+        "sujeetkv/php-cli": "dev-master"
     }
+}
+```
