@@ -9,7 +9,7 @@ require_once __DIR__ . '/../src/Helper/Table.php';
 require_once __DIR__ . '/../src/Helper/Figlet.php';
 require_once __DIR__ . '/../src/CliException.php';
 
-use SujeetKumar\PhpCli\Cli;
+use SujeetKV\PhpCli\Cli;
 
 $commands = array(
     basename(__FILE__) => array(

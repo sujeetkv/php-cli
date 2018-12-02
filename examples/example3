@@ -9,8 +9,8 @@ require_once __DIR__ . '/../src/Helper/Figlet.php';
 require_once __DIR__ . '/../src/Helper/ActiveLine.php';
 require_once __DIR__ . '/../src/CliException.php';
 
-use SujeetKumar\PhpCli\Cli;
-use SujeetKumar\PhpCli\Helper\ActiveLine;
+use SujeetKV\PhpCli\Cli;
+use SujeetKV\PhpCli\Helper\ActiveLine;
 
 $commands = array(
     basename(__FILE__) => array(
