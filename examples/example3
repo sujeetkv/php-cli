@@ -4,6 +4,7 @@ require_once __DIR__ . '/../src/Cli.php';
 require_once __DIR__ . '/../src/StdIO.php';
 require_once __DIR__ . '/../src/Args.php';
 require_once __DIR__ . '/../src/Prompt.php';
+require_once __DIR__ . '/../src/Helper/ActiveLine.php';
 require_once __DIR__ . '/../src/Helper/TableLayout.php';
 require_once __DIR__ . '/../src/Helper/Figlet.php';
 require_once __DIR__ . '/../src/Helper/ActiveLine.php';
